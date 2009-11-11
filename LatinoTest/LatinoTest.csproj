@@ -33,6 +33,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="DocumentAtlas.cs" />
     <Compile Include="Program.cs" />
   </ItemGroup>
   <ItemGroup>
