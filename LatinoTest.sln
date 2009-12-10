@@ -13,6 +13,12 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LatinoTest", "LatinoTest\La
 		Release.AspNetCompiler.Debug = "False"
 	EndProjectSection
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LatinoTutorials", "LatinoTutorials\LatinoTutorials.csproj", "{5AC06DBA-6D42-4272-AF4C-D39412E8D54D}"
+	ProjectSection(WebsiteProperties) = preProject
+		Debug.AspNetCompiler.Debug = "True"
+		Release.AspNetCompiler.Debug = "False"
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -27,6 +33,10 @@ Global
 		{F60160C1-F9DF-4B7A-9837-B2331483B48E}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{F60160C1-F9DF-4B7A-9837-B2331483B48E}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{F60160C1-F9DF-4B7A-9837-B2331483B48E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{5AC06DBA-6D42-4272-AF4C-D39412E8D54D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{5AC06DBA-6D42-4272-AF4C-D39412E8D54D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{5AC06DBA-6D42-4272-AF4C-D39412E8D54D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{5AC06DBA-6D42-4272-AF4C-D39412E8D54D}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
