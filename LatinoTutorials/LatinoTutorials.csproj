@@ -33,7 +33,11 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Tutorial2.cs" />
+    <None Include="Tutorial2_2.cs" />
+    <None Include="Tutorial3_1.cs" />
+    <Compile Include="Tutorial3_3.cs" />
+    <None Include="Tutorial3_2.cs" />
+    <None Include="Tutorial2_1.cs" />
     <None Include="Tutorial1.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>

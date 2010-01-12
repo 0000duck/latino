@@ -28,8 +28,8 @@ namespace LatinoTutorials
             Console.WriteLine("Create an ArrayList ...");
             ArrayList<int> list = new ArrayList<int>(new int[] { 1, 2, 3 });            
             Console.WriteLine(list);
-            // add some more items
-            Console.WriteLine("Add some more items ...");
+            // add more items
+            Console.WriteLine("Add more items ...");
             list.AddRange(new int[] { 6, 5, 4 });
             Console.WriteLine(list);
             // sort descendingly
@@ -65,16 +65,16 @@ namespace LatinoTutorials
             // *** Set ***
             Console.WriteLine("*** Set ***");
             Console.WriteLine();
-            // create a Set 
-            Console.WriteLine("Create a Set ...");
+            // create Set 
+            Console.WriteLine("Create Set ...");
             Set<int> set = new Set<int>(new int[] { 1, 2, 3 });
             Console.WriteLine(set);
             // check for items
             Console.WriteLine("Check for items ...");
             Console.WriteLine(set.Contains(1));
             Console.WriteLine(set.Contains(4));
-            // add some more items (note the duplicate)
-            Console.WriteLine("Add some more items ...");
+            // add more items (note the duplicate)
+            Console.WriteLine("Add more items ...");
             set.AddRange(new int[] { 6, 5, 4, 3 });
             Console.WriteLine(set);
             // remove some items
@@ -114,16 +114,16 @@ namespace LatinoTutorials
             // *** BinaryVector ***
             Console.WriteLine("*** BinaryVector ***");
             Console.WriteLine();
-            // create a BinaryVector
-            Console.WriteLine("Create a BinaryVector ...");
+            // create BinaryVector
+            Console.WriteLine("Create BinaryVector ...");
             BinaryVector<char> bin_vec = new BinaryVector<char>(new char[] { 'a', 'b', 'c' });            
             Console.WriteLine(bin_vec);
             // check for items
             Console.WriteLine("Check for items ...");
             Console.WriteLine(bin_vec.Contains('a'));
             Console.WriteLine(bin_vec.Contains('d'));
-            // add some more items (note the duplicate)
-            Console.WriteLine("Add some more items ...");
+            // add more items (note the duplicate)
+            Console.WriteLine("Add more items ...");
             bin_vec.AddRange(new char[] { 'f', 'e', 'd', 'c' });
             Console.WriteLine(bin_vec);
             // remove some items
@@ -151,8 +151,8 @@ namespace LatinoTutorials
             // *** Pair ***
             Console.WriteLine("*** Pair ***");
             Console.WriteLine();
-            // create a Pair
-            Console.WriteLine("Create a Pair ...");
+            // create Pair
+            Console.WriteLine("Create Pair ...");
             Pair<int, string> pair = new Pair<int, string>(3, "dogs");
             Console.WriteLine(pair);
             // create another Pair
@@ -174,8 +174,8 @@ namespace LatinoTutorials
             // *** KeyDat ***
             Console.WriteLine("*** KeyDat ***");
             Console.WriteLine();
-            // create a KeyDat
-            Console.WriteLine("Create a KeyDat ...");
+            // create KeyDat
+            Console.WriteLine("Create KeyDat ...");
             KeyDat<int, string> key_dat = new KeyDat<int, string>(3, "dogs");
             Console.WriteLine(key_dat);
             // create another KeyDat
@@ -227,8 +227,7 @@ namespace LatinoTutorials
             ArrayList<KeyDat<double, string>> list_key_dat = new ArrayList<KeyDat<double, string>>(new KeyDat<double, string>[] {
                 new KeyDat<double, string>(2.4, "cats"),
                 new KeyDat<double, string>(3.3, "dogs"),
-                new KeyDat<double, string>(4.2, "lizards")
-            });
+                new KeyDat<double, string>(4.2, "lizards") });
             Console.WriteLine(list_key_dat);
             // sort descendingly
             Console.WriteLine("Sort descendingly ...");
