@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Text;
 using System.IO;
@@ -24,7 +24,7 @@ namespace BDocVisualizer
         public string OppositeKeywords
             = "";
 
-        public Document(float x, float y, float r_x, float r_y) : base(x, y, r_x, r_y)
+        public Document(float x, float y, float rX, float rY) : base(x, y, rX, rY)
         {
         }
     }
@@ -35,143 +35,143 @@ namespace BDocVisualizer
         {
             Utils.ThrowException(a == null ? new ArgumentNullException("a") : null);
             Utils.ThrowException(b == null ? new ArgumentNullException("b") : null);
-            SparseVector<double> prod_vec = new SparseVector<double>();
+            SparseVector<double> prodVec = new SparseVector<double>();
             int i = 0, j = 0;
-            int a_count = a.Count;
-            int b_count = b.Count;
-            if (a_count == 0 || b_count == 0) { return prod_vec; }
-            ArrayList<int> a_idx = a.Inner.InnerIdx;
-            ArrayList<double> a_dat = a.Inner.InnerDat;
-            ArrayList<int> b_idx = b.Inner.InnerIdx;
-            ArrayList<double> b_dat = b.Inner.InnerDat;
-            int a_idx_i = a_idx[0];
-            int b_idx_j = b_idx[0];
+            int aCount = a.Count;
+            int bCount = b.Count;
+            if (aCount == 0 || bCount == 0) { return prodVec; }
+            ArrayList<int> aIdx = a.Inner.InnerIdx;
+            ArrayList<double> aDat = a.Inner.InnerDat;
+            ArrayList<int> bIdx = b.Inner.InnerIdx;
+            ArrayList<double> bDat = b.Inner.InnerDat;
+            int aIdxI = aIdx[0];
+            int bIdxJ = bIdx[0];
             while (true)
             {
-                if (a_idx_i < b_idx_j)
+                if (aIdxI < bIdxJ)
                 {
-                    if (++i == a_count) { break; }
-                    a_idx_i = a_idx[i];
+                    if (++i == aCount) { break; }
+                    aIdxI = aIdx[i];
                 }
-                else if (a_idx_i > b_idx_j)
+                else if (aIdxI > bIdxJ)
                 {
-                    if (++j == b_count) { break; }
-                    b_idx_j = b_idx[j];
+                    if (++j == bCount) { break; }
+                    bIdxJ = bIdx[j];
                 }
                 else
                 {
-                    prod_vec.InnerIdx.Add(a_idx_i);
-                    prod_vec.InnerDat.Add(a_dat[i] * b_dat[j]);
-                    if (++i == a_count || ++j == b_count) { break; }
-                    a_idx_i = a_idx[i];
-                    b_idx_j = b_idx[j];
+                    prodVec.InnerIdx.Add(aIdxI);
+                    prodVec.InnerDat.Add(aDat[i] * bDat[j]);
+                    if (++i == aCount || ++j == bCount) { break; }
+                    aIdxI = aIdx[i];
+                    bIdxJ = bIdx[j];
                 }
             }
-            return prod_vec;
+            return prodVec;
         }
 
-        private static bool IsAllStopWords(string term, Set<string>.ReadOnly stop_words)
+        private static bool IsAllStopWords(string term, Set<string>.ReadOnly stopWords)
         {
             string[] words = term.Split(' ');
             foreach (string word in words)
             {
-                if (!stop_words.Contains(word)) { return false; }
+                if (!stopWords.Contains(word)) { return false; }
             }
             return true;
         }
 
-        private static bool ContainsGoldenStandardWord(string term, Set<string>.ReadOnly golden_standard, IStemmer stemmer)
+        private static bool ContainsGoldenStandardWord(string term, Set<string>.ReadOnly goldenStandard, IStemmer stemmer)
         {
             string[] words = term.Split(' ');
             foreach (string word in words)
             {
-                if (golden_standard.Contains(stemmer.GetStem(word))) { return true; }
+                if (goldenStandard.Contains(stemmer.GetStem(word))) { return true; }
             }
             return false;
         }
 
-        private static bool ContainsGoldenStandardWord2(string term, Set<string> golden_standard, IStemmer stemmer)
+        private static bool ContainsGoldenStandardWord2(string term, Set<string> goldenStandard, IStemmer stemmer)
         {
             string[] words = term.Split(' ');
-            bool ret_val = false;
+            bool retVal = false;
             foreach (string word in words)
             {
                 string stem = stemmer.GetStem(word);
-                if (golden_standard.Contains(stem))
+                if (goldenStandard.Contains(stem))
                 {
-                    ret_val = true;
-                    golden_standard.Remove(stem);
+                    retVal = true;
+                    goldenStandard.Remove(stem);
                 }
             }
-            return ret_val;
+            return retVal;
         }
 
-        private static string TermsToString(IEnumerable<string> trems, Set<string>.ReadOnly stop_words, Set<string>.ReadOnly golden_standard, IStemmer stemmer)
+        private static string TermsToString(IEnumerable<string> trems, Set<string>.ReadOnly stopWords, Set<string>.ReadOnly goldenStandard, IStemmer stemmer)
         {
-            StringBuilder str_builder = new StringBuilder();
+            StringBuilder strBuilder = new StringBuilder();
             foreach (string term in trems)
             {
-                if (IsAllStopWords(term, stop_words)) { str_builder.Append("(" + term + "), "); }
-                else if (ContainsGoldenStandardWord(term, golden_standard, stemmer)) { str_builder.Append(term + "*, "); }
-                else { str_builder.Append(term + ", "); }
+                if (IsAllStopWords(term, stopWords)) { strBuilder.Append("(" + term + "), "); }
+                else if (ContainsGoldenStandardWord(term, goldenStandard, stemmer)) { strBuilder.Append(term + "*, "); }
+                else { strBuilder.Append(term + ", "); }
             }
-            return str_builder.ToString().TrimEnd(' ', ',');
+            return strBuilder.ToString().TrimEnd(' ', ',');
         }
 
-        private static void TermsToStringCsv(IEnumerable<KeyDat<double, string>> trems, Set<string>.ReadOnly stop_words, Set<string>.ReadOnly golden_standard, IStemmer stemmer, string file_name)
+        private static void TermsToStringCsv(IEnumerable<KeyDat<double, string>> trems, Set<string>.ReadOnly stopWords, Set<string>.ReadOnly goldenStandard, IStemmer stemmer, string fileName)
         {
-            StreamWriter writer = new StreamWriter(file_name);
-            StringBuilder str_builder = new StringBuilder();
+            StreamWriter writer = new StreamWriter(fileName);
+            StringBuilder strBuilder = new StringBuilder();
             foreach (KeyDat<double, string> term in trems)
             {   
-                if (true/*!IsAllStopWords(term.Dat, stop_words)*/) { str_builder.Append(string.Format("{0},", term.Key)); }
-                if (IsAllStopWords(term.Dat, stop_words)) { str_builder.AppendLine(term.Dat + ",,STOP"); }
-                else if (ContainsGoldenStandardWord(term.Dat, golden_standard, stemmer)) { str_builder.AppendLine(term.Dat + ",GOLD,"); }
-                else { str_builder.AppendLine(term.Dat); }
+                if (true/*!IsAllStopWords(term.Dat, stopWords)*/) { strBuilder.Append(string.Format("{0},", term.Key)); }
+                if (IsAllStopWords(term.Dat, stopWords)) { strBuilder.AppendLine(term.Dat + ",,STOP"); }
+                else if (ContainsGoldenStandardWord(term.Dat, goldenStandard, stemmer)) { strBuilder.AppendLine(term.Dat + ",GOLD,"); }
+                else { strBuilder.AppendLine(term.Dat); }
             }
-            writer.WriteLine(str_builder.ToString());
+            writer.WriteLine(strBuilder.ToString());
             writer.Close();
         }
 
-        private static string TermsToString2(IEnumerable<string> trems, Set<string>.ReadOnly stop_words, Set<string> golden_standard, IStemmer stemmer)
+        private static string TermsToString2(IEnumerable<string> trems, Set<string>.ReadOnly stopWords, Set<string> goldenStandard, IStemmer stemmer)
         {
-            StringBuilder str_builder = new StringBuilder();
+            StringBuilder strBuilder = new StringBuilder();
             foreach (string term in trems)
             {
-                if (IsAllStopWords(term, stop_words)) { /*str_builder.Append("(" + term + "), ");*/ }
-                else if (ContainsGoldenStandardWord2(term, golden_standard, stemmer)) { str_builder.Append(term + "*, "); }
-                else { str_builder.Append(term + ", "); }
+                if (IsAllStopWords(term, stopWords)) { /*strBuilder.Append("(" + term + "), ");*/ }
+                else if (ContainsGoldenStandardWord2(term, goldenStandard, stemmer)) { strBuilder.Append(term + "*, "); }
+                else { strBuilder.Append(term + ", "); }
             }
-            return str_builder.ToString().TrimEnd(' ', ',');
+            return strBuilder.ToString().TrimEnd(' ', ',');
         }
 
-        private static int GetWordIdx(string word_stem, BowSpace bow_space)
+        private static int GetWordIdx(string wordStem, BowSpace bowSpace)
         {
             int i = 0;
-            foreach (Word word in bow_space.Words)
+            foreach (Word word in bowSpace.Words)
             {
-                if (bow_space.Stemmer.GetStem(word.MostFrequentForm) == bow_space.Stemmer.GetStem(word_stem)) { return i; }
+                if (bowSpace.Stemmer.GetStem(word.MostFrequentForm) == bowSpace.Stemmer.GetStem(wordStem)) { return i; }
                 i++;
             }
             return -1;
         }
 
-        private static void ComputeBisociativity(IEnumerable<string> docs, ITokenizer tokenizer, IStemmer stemmer, Set<string>.ReadOnly stop_words, Set<string>.ReadOnly golden_standard)
+        private static void ComputeBisociativity(IEnumerable<string> docs, ITokenizer tokenizer, IStemmer stemmer, Set<string>.ReadOnly stopWords, Set<string>.ReadOnly goldenStandard)
         {
             Console.WriteLine("-> Computing bisociativity ...");
             // compute pure TF vectors
-            BowSpace bow_space = new BowSpace();
-            bow_space.StopWords = StopWords.EnglishStopWords;
-            bow_space.Stemmer = stemmer;
-            bow_space.WordWeightType = WordWeightType.TermFreq;
-            bow_space.NormalizeVectors = false;
-            bow_space.MinWordFreq = 1;
-            bow_space.MaxNGramLen = 1;// 3;
-            bow_space.CutLowWeightsPerc = 0;
-            bow_space.Tokenizer = tokenizer;
-            bow_space.Initialize(docs);
+            BowSpace bowSpace = new BowSpace();
+            bowSpace.StopWords = StopWords.EnglishStopWords;
+            bowSpace.Stemmer = stemmer;
+            bowSpace.WordWeightType = WordWeightType.TermFreq;
+            bowSpace.NormalizeVectors = false;
+            bowSpace.MinWordFreq = 1;
+            bowSpace.MaxNGramLen = 1;// 3;
+            bowSpace.CutLowWeightsPerc = 0;
+            bowSpace.Tokenizer = tokenizer;
+            bowSpace.Initialize(docs);
             // normalize TF vectors         
-            foreach (SparseVector<double>.ReadOnly vec in bow_space.BowVectors)
+            foreach (SparseVector<double>.ReadOnly vec in bowSpace.BowVectors)
             {
                 double sum = 0;
                 foreach (IdxDat<double> item in vec) 
@@ -188,32 +188,32 @@ namespace BDocVisualizer
                 }
             }
             // transpose matrix
-            SparseMatrix<double> mat = ModelUtils.GetTransposedMatrix(bow_space);
+            SparseMatrix<double> mat = ModelUtils.GetTransposedMatrix(bowSpace);
             // compute bisociativity values
-            StreamWriter writer = new StreamWriter("..\\..\\data\\swanson_bisoc.csv");
+            StreamWriter writer = new StreamWriter("..\\..\\data\\swansonBisoc.csv");
             Bisociativity bisoc = new Bisociativity(/*k=*/1);
-            int migraine_idx = GetWordIdx("migraine", bow_space);
-            int magnesium_idx = GetWordIdx("magnesium", bow_space);
+            int migraineIdx = GetWordIdx("migraine", bowSpace);
+            int magnesiumIdx = GetWordIdx("magnesium", bowSpace);
             int j = 0;
             writer.WriteLine("Word,IsStopWord,IsGoldenStandardWord,Migraine,Magnesium,Min");
-            foreach (Word word in bow_space.Words)
+            foreach (Word word in bowSpace.Words)
             {
-                if (j != migraine_idx && j != magnesium_idx)
+                if (j != migraineIdx && j != magnesiumIdx)
                 {
                     //Console.WriteLine("{0} {1}", word.MostFrequentForm, j);
                     // compute bisociativity between the word and "migraine"
-                    double migraine_bisoc = bisoc.GetSimilarity(mat[j], mat[migraine_idx]);
+                    double migraineBisoc = bisoc.GetSimilarity(mat[j], mat[migraineIdx]);
                     // compute bisociativity between the word and "magnesium"
-                    double magnesium_bisoc = bisoc.GetSimilarity(mat[j], mat[magnesium_idx]);
-                    if (migraine_bisoc > 0 && magnesium_bisoc > 0 && !stop_words.Contains(word.MostFrequentForm))
+                    double magnesiumBisoc = bisoc.GetSimilarity(mat[j], mat[magnesiumIdx]);
+                    if (migraineBisoc > 0 && magnesiumBisoc > 0 && !stopWords.Contains(word.MostFrequentForm))
                     {
                         writer.WriteLine("{0},{1},{2},{3},{4},{5}",
                             word.MostFrequentForm,
-                            stop_words.Contains(word.MostFrequentForm) ? "yes" : "",
-                            golden_standard.Contains(bow_space.Stemmer.GetStem(word.MostFrequentForm)) ? "yes" : "",
-                            migraine_bisoc,
-                            magnesium_bisoc,
-                            Math.Min(migraine_bisoc, magnesium_bisoc));
+                            stopWords.Contains(word.MostFrequentForm) ? "yes" : "",
+                            goldenStandard.Contains(bowSpace.Stemmer.GetStem(word.MostFrequentForm)) ? "yes" : "",
+                            migraineBisoc,
+                            magnesiumBisoc,
+                            Math.Min(migraineBisoc, magnesiumBisoc));
                     }
                 }
                 j++;
@@ -224,73 +224,73 @@ namespace BDocVisualizer
         private static void Main(string[] args)
         {
             // read stop words and golden standard
-            Dictionary<string, ArrayList<string>> stop_words = new Dictionary<string, ArrayList<string>>();
-            string[] stop_word_list = File.ReadAllLines("..\\..\\data\\stopwords.txt");
+            Dictionary<string, ArrayList<string>> stopWords = new Dictionary<string, ArrayList<string>>();
+            string[] stopWordList = File.ReadAllLines("..\\..\\data\\stopwords.txt");
             PorterStemmer stemmer = new PorterStemmer();
-            foreach (string stop_word in stop_word_list)
+            foreach (string stopWord in stopWordList)
             {
-                string stem = stemmer.GetStem(stop_word);
-                if (stop_words.ContainsKey(stem))
+                string stem = stemmer.GetStem(stopWord);
+                if (stopWords.ContainsKey(stem))
                 {
-                    stop_words[stem].Add(stop_word);
+                    stopWords[stem].Add(stopWord);
                 }
                 else
                 {
-                    stop_words.Add(stem, new ArrayList<string>(new string[] { stop_word }));
+                    stopWords.Add(stem, new ArrayList<string>(new string[] { stopWord }));
                 }
             }
-            string golden_standard = File.ReadAllText("..\\..\\data\\goldenstandard.txt");
+            string goldenStandard = File.ReadAllText("..\\..\\data\\goldenstandard.txt");
             RegexTokenizer tokenizer = new RegexTokenizer();
             tokenizer.IgnoreUnknownTokens = true;
             tokenizer.TokenRegex = @"\w(\-?\w)+";
-            tokenizer.Text = golden_standard;
-            Set<string> golden_standard_set = new Set<string>();
+            tokenizer.Text = goldenStandard;
+            Set<string> goldenStandardSet = new Set<string>();
             foreach (string token in tokenizer)
             {
                 string stem = stemmer.GetStem(token);
-                //if (stop_words.ContainsKey(stem)) { Console.WriteLine(stop_words[stem]); }
-                stop_words.Remove(stem);
-                golden_standard_set.Add(stem);
+                //if (stopWords.ContainsKey(stem)) { Console.WriteLine(stopWords[stem]); }
+                stopWords.Remove(stem);
+                goldenStandardSet.Add(stem);
             }
-            Set<string> stop_word_set = new Set<string>();
-            foreach (KeyValuePair<string, ArrayList<string>> item in stop_words)
+            Set<string> stopWordSet = new Set<string>();
+            foreach (KeyValuePair<string, ArrayList<string>> item in stopWords)
             {
-                stop_word_set.AddRange(item.Value);
+                stopWordSet.AddRange(item.Value);
             }
             // preprocess documents
             Console.WriteLine("-> Processing documents ...");
-            string[] labeled_docs = File.ReadAllLines(@"..\..\data\MigraineMagnesium_LabeledTitles.txt");
-            string[] labels = new string[labeled_docs.Length];
-            string[] docs = new string[labeled_docs.Length];
-            string[] migraine_keywords = new string[labeled_docs.Length];
-            string[] magnesium_keywords = new string[labeled_docs.Length];
+            string[] labeledDocs = File.ReadAllLines(@"..\..\data\MigraineMagnesium_LabeledTitles.txt");
+            string[] labels = new string[labeledDocs.Length];
+            string[] docs = new string[labeledDocs.Length];
+            string[] migraineKeywords = new string[labeledDocs.Length];
+            string[] magnesiumKeywords = new string[labeledDocs.Length];
             int i = 0;
-            foreach (string labeled_doc in labeled_docs)
+            foreach (string labeledDoc in labeledDocs)
             {
-                int j = labeled_doc.IndexOf('\t');
-                labels[i] = labeled_doc.Substring(0, j);
-                docs[i] = HttpUtility.HtmlDecode(labeled_doc.Substring(j + 1, labeled_doc.Length - (j + 1)));
+                int j = labeledDoc.IndexOf('\t');
+                labels[i] = labeledDoc.Substring(0, j);
+                docs[i] = HttpUtility.HtmlDecode(labeledDoc.Substring(j + 1, labeledDoc.Length - (j + 1)));
                 i++;
             }
-            BowSpace bow_space = new BowSpace();
+            BowSpace bowSpace = new BowSpace();
             //Set<string> tmp = new Set<string>(StopWords.EnglishStopWords);
-            //tmp.AddRange(stop_word_set);
-            //bow_space.StopWords = tmp;
-            bow_space.StopWords = StopWords.EnglishStopWords;
-            bow_space.Stemmer = stemmer;
-            bow_space.WordWeightType = WordWeightType.TfIdf;
-            bow_space.MinWordFreq = 1;
-            bow_space.MaxNGramLen = 3;
-            bow_space.CutLowWeightsPerc = 0;
-            bow_space.Tokenizer = tokenizer;
-            bow_space.Initialize(docs);
+            //tmp.AddRange(stopWordSet);
+            //bowSpace.StopWords = tmp;
+            bowSpace.StopWords = StopWords.EnglishStopWords;
+            bowSpace.Stemmer = stemmer;
+            bowSpace.WordWeightType = WordWeightType.TfIdf;
+            bowSpace.MinWordFreq = 1;
+            bowSpace.MaxNGramLen = 3;
+            bowSpace.CutLowWeightsPerc = 0;
+            bowSpace.Tokenizer = tokenizer;
+            bowSpace.Initialize(docs);
             // compute bisociativity for terms
-            ComputeBisociativity(docs, tokenizer, stemmer, stop_word_set, golden_standard_set);
+            ComputeBisociativity(docs, tokenizer, stemmer, stopWordSet, goldenStandardSet);
             // determine misclassified documents
             LabeledDataset<string, SparseVector<double>.ReadOnly> dataset = new LabeledDataset<string, SparseVector<double>.ReadOnly>();
-            for (i = 0; i < bow_space.BowVectors.Count; i++)
+            for (i = 0; i < bowSpace.BowVectors.Count; i++)
             {
-                dataset.Add(labels[i], bow_space.BowVectors[i]);
+                dataset.Add(labels[i], bowSpace.BowVectors[i]);
             }
             BatchUpdateCentroidClassifier<string> classifier = new BatchUpdateCentroidClassifier<string>();
             classifier.Iterations = 0;
@@ -299,7 +299,7 @@ namespace BDocVisualizer
             Console.WriteLine("-> Classifying documents ...");
             i = 0;
             //StreamWriter writer = new StreamWriter("..\\..\\data\\misclassified.txt");
-            foreach (SparseVector<double>.ReadOnly vec in bow_space.BowVectors)
+            foreach (SparseVector<double>.ReadOnly vec in bowSpace.BowVectors)
             {
                 Prediction<string> prediction = classifier.Predict(vec);
                 if (prediction.BestClassLabel != labels[i])
@@ -313,22 +313,22 @@ namespace BDocVisualizer
             Console.WriteLine("-> Computing opposite keywords ...");
             ArrayList<SparseVector<double>> centroids = classifier.GetCentroids(new string[] { "MIGRAINE", "MAGNESIUM" });
             // compute potential b-terms
-            SparseVector<double> b_terms = GetProdVec(centroids[0], centroids[1]);
-            Console.WriteLine(TermsToString2(bow_space.GetKeywords(b_terms, int.MaxValue), stop_word_set, golden_standard_set.Clone(), stemmer));
-            //TermsToStringCsv(bow_space.GetKeywords(b_terms), stop_word_set, golden_standard_set.Clone(), stemmer, "..\\..\\data\\swanson_terms.csv");
+            SparseVector<double> bTerms = GetProdVec(centroids[0], centroids[1]);
+            Console.WriteLine(TermsToString2(bowSpace.GetKeywords(bTerms, int.MaxValue), stopWordSet, goldenStandardSet.Clone(), stemmer));
+            //TermsToStringCsv(bowSpace.GetKeywords(bTerms), stopWordSet, goldenStandardSet.Clone(), stemmer, "..\\..\\data\\swansonTerms.csv");
             // compute opposite keywords
             for (i = 0; i < docs.Length; i++)
             {
-                SparseVector<double> migraine_prod_vec = GetProdVec(bow_space.BowVectors[i], centroids[0]);
-                SparseVector<double> magnesium_prod_vec = GetProdVec(bow_space.BowVectors[i], centroids[1]);
-                //migraine_keywords[i] = TermsToString(bow_space.GetKeywords(migraine_prod_vec, 5), stop_word_set, golden_standard_set, stemmer) + (migraine_prod_vec.Count > 5 ? " ..." : "");
-                //magnesium_keywords[i] = TermsToString(bow_space.GetKeywords(magnesium_prod_vec, 5), stop_word_set, golden_standard_set, stemmer) + (magnesium_prod_vec.Count > 5 ? " ..." : ""); 
-                migraine_keywords[i] = TermsToString(bow_space.GetKeywords(migraine_prod_vec, int.MaxValue), stop_word_set, golden_standard_set, stemmer);
-                magnesium_keywords[i] = TermsToString(bow_space.GetKeywords(magnesium_prod_vec, int.MaxValue), stop_word_set, golden_standard_set, stemmer);
+                SparseVector<double> migraineProdVec = GetProdVec(bowSpace.BowVectors[i], centroids[0]);
+                SparseVector<double> magnesiumProdVec = GetProdVec(bowSpace.BowVectors[i], centroids[1]);
+                //migraineKeywords[i] = TermsToString(bowSpace.GetKeywords(migraineProdVec, 5), stopWordSet, goldenStandardSet, stemmer) + (migraineProdVec.Count > 5 ? " ..." : "");
+                //magnesiumKeywords[i] = TermsToString(bowSpace.GetKeywords(magnesiumProdVec, 5), stopWordSet, goldenStandardSet, stemmer) + (magnesiumProdVec.Count > 5 ? " ..." : ""); 
+                migraineKeywords[i] = TermsToString(bowSpace.GetKeywords(migraineProdVec, int.MaxValue), stopWordSet, goldenStandardSet, stemmer);
+                magnesiumKeywords[i] = TermsToString(bowSpace.GetKeywords(magnesiumProdVec, int.MaxValue), stopWordSet, goldenStandardSet, stemmer);
             }
             // compute layout
             Console.WriteLine("-> Computing layout ...");
-            SemanticSpaceLayout layout = new SemanticSpaceLayout(bow_space);
+            SemanticSpaceLayout layout = new SemanticSpaceLayout(bowSpace);
             layout.NeighborhoodSize = 30;
             layout.SimThresh = 0;
             Latino.Visualization.LayoutSettings settings = new Latino.Visualization.LayoutSettings(1024, 768);
@@ -336,8 +336,8 @@ namespace BDocVisualizer
             settings.FitToBounds = false;
             settings.AdjustmentType = LayoutAdjustmentType.Soft;
             Vector2D[] coords = layout.ComputeLayout(settings);
-            //StreamWriter writer = new StreamWriter("..\\..\\data\\layout_migraine.txt");
-            //StreamWriter writer2 = new StreamWriter("..\\..\\data\\layout_magnesium.txt");
+            //StreamWriter writer = new StreamWriter("..\\..\\data\\layoutMigraine.txt");
+            //StreamWriter writer2 = new StreamWriter("..\\..\\data\\layoutMagnesium.txt");
             //i = 0;
             //foreach (Vector2D pt in coords)
             //{                
@@ -355,38 +355,38 @@ namespace BDocVisualizer
             //writer2.Close();
             // visualize layout
             Console.WriteLine("-> Preparing visualization ...");
-            MainWnd main_wnd = new MainWnd();
+            MainWnd mainWnd = new MainWnd();
             DrawableGroup vis = new DrawableGroup();
-            Color red_color = Color.FromArgb(64, 255, 0, 0);
-            Color green_color = Color.FromArgb(64, 0, 0, 255);
-            Brush red_brush = new SolidBrush(red_color);
-            Brush blue_brush = new SolidBrush(green_color);
+            Color redColor = Color.FromArgb(64, 255, 0, 0);
+            Color greenColor = Color.FromArgb(64, 0, 0, 255);
+            Brush redBrush = new SolidBrush(redColor);
+            Brush blueBrush = new SolidBrush(greenColor);
             i = 0;
             foreach (Vector2D pt in coords)
             {
-                Document pt_vis = new Document((float)pt.X, (float)pt.Y, 3, 3);
-                pt_vis.Idx = i;
-                pt_vis.Text = docs[i];
-                pt_vis.Label = labels[i];
-                pt_vis.Pen = Pens.Transparent;
+                Document ptVis = new Document((float)pt.X, (float)pt.Y, 3, 3);
+                ptVis.Idx = i;
+                ptVis.Text = docs[i];
+                ptVis.Label = labels[i];
+                ptVis.Pen = Pens.Transparent;
                 if (labels[i].StartsWith("MIGRAINE"))
                 {
-                    pt_vis.Brush = red_brush;
-                    if (labels[i].EndsWith("*")) { pt_vis.Pen = Pens.Red; }
-                    pt_vis.OppositeKeywords = magnesium_keywords[i];
+                    ptVis.Brush = redBrush;
+                    if (labels[i].EndsWith("*")) { ptVis.Pen = Pens.Red; }
+                    ptVis.OppositeKeywords = magnesiumKeywords[i];
                 }
                 else
                 {
-                    pt_vis.Brush = blue_brush;
-                    if (labels[i].EndsWith("*")) { pt_vis.Pen = Pens.Blue; }
-                    pt_vis.OppositeKeywords = migraine_keywords[i];
+                    ptVis.Brush = blueBrush;
+                    if (labels[i].EndsWith("*")) { ptVis.Pen = Pens.Blue; }
+                    ptVis.OppositeKeywords = migraineKeywords[i];
                 }
-                vis.DrawableObjects.Add(pt_vis);
+                vis.DrawableObjects.Add(ptVis);
                 i++;
             }
-            main_wnd.DrawableObjectViewer.DrawableObject = vis;
+            mainWnd.DrawableObjectViewer.DrawableObject = vis;
             Console.WriteLine("-> Done.");
-            main_wnd.ShowDialog();
+            mainWnd.ShowDialog();
         }
     }
 }

@@ -1,8 +1,8 @@
-/*=====================================================================;
+﻿/*=====================================================================;
  *
  *  This file is part of LATINO. See http://latino.sf.net
  *
- *  File:          Tutorial3_2.cs
+ *  File:          Tutorial32.cs
  *  Version:       1.0
  *  Desc:          Tutorial 3.2: Cloning
  *  Author:        Miha Grcar

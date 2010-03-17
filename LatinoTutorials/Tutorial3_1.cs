@@ -1,8 +1,8 @@
-/*=====================================================================;
+﻿/*=====================================================================;
  *
  *  This file is part of LATINO. See http://latino.sf.net
  *
- *  File:          Tutorial3_1.cs
+ *  File:          Tutorial31.cs
  *  Version:       1.0
  *  Desc:          Tutorial 3.1: Read-only adapters
  *  Author:        Miha Grcar

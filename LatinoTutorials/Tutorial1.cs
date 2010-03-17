@@ -1,4 +1,4 @@
-/*=====================================================================;
+﻿/*=====================================================================;
  *
  *  This file is part of LATINO. See http://latino.sf.net
  *
@@ -116,36 +116,36 @@ namespace LatinoTutorials
             Console.WriteLine();
             // create BinaryVector
             Console.WriteLine("Create BinaryVector ...");
-            BinaryVector<char> bin_vec = new BinaryVector<char>(new char[] { 'a', 'b', 'c' });            
-            Console.WriteLine(bin_vec);
+            BinaryVector<char> binVec = new BinaryVector<char>(new char[] { 'a', 'b', 'c' });            
+            Console.WriteLine(binVec);
             // check for items
             Console.WriteLine("Check for items ...");
-            Console.WriteLine(bin_vec.Contains('a'));
-            Console.WriteLine(bin_vec.Contains('d'));
+            Console.WriteLine(binVec.Contains('a'));
+            Console.WriteLine(binVec.Contains('d'));
             // add more items (note the duplicate)
             Console.WriteLine("Add more items ...");
-            bin_vec.AddRange(new char[] { 'f', 'e', 'd', 'c' });
-            Console.WriteLine(bin_vec);
+            binVec.AddRange(new char[] { 'f', 'e', 'd', 'c' });
+            Console.WriteLine(binVec);
             // remove some items
             Console.WriteLine("Remove some items ...");
-            bin_vec.RemoveRange(new char[] { 'a', 'c' });
-            bin_vec.Remove('e');
-            Console.WriteLine(bin_vec);
+            binVec.RemoveRange(new char[] { 'a', 'c' });
+            binVec.Remove('e');
+            Console.WriteLine(binVec);
             // convert to array
             Console.WriteLine("Convert to array ...");
-            char[] array3 = bin_vec.ToArray();
+            char[] array3 = binVec.ToArray();
             Console.WriteLine(new ArrayList<char>(array3));
             // convert to BinaryVector of string
             Console.WriteLine("Convert to BinaryVector of string ...");
-            BinaryVector<string> bin_vec2 = new BinaryVector<string>(bin_vec.ToArray<string>());
-            Console.WriteLine(bin_vec2);
+            BinaryVector<string> binVec2 = new BinaryVector<string>(binVec.ToArray<string>());
+            Console.WriteLine(binVec2);
             // get items
             Console.WriteLine("Get items ...");
-            Console.WriteLine(bin_vec2[0]);
-            Console.WriteLine(bin_vec2[1]);
+            Console.WriteLine(binVec2[0]);
+            Console.WriteLine(binVec2[1]);
             // get length
             Console.WriteLine("Get length ...");
-            Console.WriteLine(bin_vec2.Count);            
+            Console.WriteLine(binVec2.Count);            
             Console.WriteLine();
 
             // *** Pair ***
@@ -176,23 +176,23 @@ namespace LatinoTutorials
             Console.WriteLine();
             // create KeyDat
             Console.WriteLine("Create KeyDat ...");
-            KeyDat<int, string> key_dat = new KeyDat<int, string>(3, "dogs");
-            Console.WriteLine(key_dat);
+            KeyDat<int, string> keyDat = new KeyDat<int, string>(3, "dogs");
+            Console.WriteLine(keyDat);
             // create another KeyDat
             Console.WriteLine("Create another KeyDat ...");
-            KeyDat<int, string> key_dat2 = new KeyDat<int, string>(3, "cats");
-            Console.WriteLine(key_dat2);
+            KeyDat<int, string> keyDat2 = new KeyDat<int, string>(3, "cats");
+            Console.WriteLine(keyDat2);
             // compare 
             Console.WriteLine("Compare ...");
-            Console.WriteLine(key_dat == key_dat2);
+            Console.WriteLine(keyDat == keyDat2);
             // make a change
             Console.WriteLine("Make a change ...");
-            key_dat.Key = 4;
-            Console.WriteLine(key_dat);
+            keyDat.Key = 4;
+            Console.WriteLine(keyDat);
             // compare again
             Console.WriteLine("Compare again ...");
-            Console.WriteLine(key_dat == key_dat2);
-            Console.WriteLine(key_dat > key_dat2);
+            Console.WriteLine(keyDat == keyDat2);
+            Console.WriteLine(keyDat > keyDat2);
             Console.WriteLine();
 
             // *** IdxDat ***
@@ -200,23 +200,23 @@ namespace LatinoTutorials
             Console.WriteLine();
             // create an IdxDat
             Console.WriteLine("Create an IdxDat ...");
-            IdxDat<string> idx_dat = new IdxDat<string>(3, "dogs");
-            Console.WriteLine(idx_dat);
+            IdxDat<string> idxDat = new IdxDat<string>(3, "dogs");
+            Console.WriteLine(idxDat);
             // create another IdxDat
             Console.WriteLine("Create another IdxDat ...");
-            IdxDat<string> idx_dat2 = new IdxDat<string>(4, "cats");
-            Console.WriteLine(idx_dat2);
+            IdxDat<string> idxDat2 = new IdxDat<string>(4, "cats");
+            Console.WriteLine(idxDat2);
             // compare 
             Console.WriteLine("Compare ...");
-            Console.WriteLine(idx_dat == idx_dat2);
+            Console.WriteLine(idxDat == idxDat2);
             // make a change
-            //idx_dat.Idx = 4; // not possible to change index
-            idx_dat.Dat = "cats";
-            Console.WriteLine(idx_dat);
+            //idxDat.Idx = 4; // not possible to change index
+            idxDat.Dat = "cats";
+            Console.WriteLine(idxDat);
             // compare again
             Console.WriteLine("Compare again ...");
-            Console.WriteLine(idx_dat == idx_dat2);
-            Console.WriteLine(idx_dat < idx_dat2);
+            Console.WriteLine(idxDat == idxDat2);
+            Console.WriteLine(idxDat < idxDat2);
             Console.WriteLine();
 
             // *** ArrayList of KeyDat ***
@@ -224,29 +224,29 @@ namespace LatinoTutorials
             Console.WriteLine();
             // create an ArrayList of KeyDat
             Console.WriteLine("Create an ArrayList of KeyDat ...");
-            ArrayList<KeyDat<double, string>> list_key_dat = new ArrayList<KeyDat<double, string>>(new KeyDat<double, string>[] {
+            ArrayList<KeyDat<double, string>> listKeyDat = new ArrayList<KeyDat<double, string>>(new KeyDat<double, string>[] {
                 new KeyDat<double, string>(2.4, "cats"),
                 new KeyDat<double, string>(3.3, "dogs"),
                 new KeyDat<double, string>(4.2, "lizards") });
-            Console.WriteLine(list_key_dat);
+            Console.WriteLine(listKeyDat);
             // sort descendingly
             Console.WriteLine("Sort descendingly ...");
-            list_key_dat.Sort(new DescSort<KeyDat<double, string>>());
-            Console.WriteLine(list_key_dat);
+            listKeyDat.Sort(new DescSort<KeyDat<double, string>>());
+            Console.WriteLine(listKeyDat);
             // find item with bisection
             Console.WriteLine("Find item with bisection ...");
-            int idx = list_key_dat.BinarySearch(new KeyDat<double, string>(3.3), new DescSort<KeyDat<double, string>>());
+            int idx = listKeyDat.BinarySearch(new KeyDat<double, string>(3.3), new DescSort<KeyDat<double, string>>());
             Console.WriteLine(idx);
-            idx = list_key_dat.BinarySearch(new KeyDat<double, string>(3), new DescSort<KeyDat<double, string>>());
+            idx = listKeyDat.BinarySearch(new KeyDat<double, string>(3), new DescSort<KeyDat<double, string>>());
             Console.WriteLine(~idx);
             // remove item
             Console.WriteLine("Remove item ...");
-            list_key_dat.Remove(new KeyDat<double, string>(3.3));
-            Console.WriteLine(list_key_dat);
+            listKeyDat.Remove(new KeyDat<double, string>(3.3));
+            Console.WriteLine(listKeyDat);
             // get first and last item
             Console.WriteLine("Get first and last item ...");
-            Console.WriteLine(list_key_dat.First);
-            Console.WriteLine(list_key_dat.Last);
+            Console.WriteLine(listKeyDat.First);
+            Console.WriteLine(listKeyDat.Last);
         }
     }
 }

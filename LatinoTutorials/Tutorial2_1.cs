@@ -1,8 +1,8 @@
-/*=====================================================================;
+﻿/*=====================================================================;
  *
  *  This file is part of LATINO. See http://latino.sf.net
  *
- *  File:          Tutorial2_1.cs
+ *  File:          Tutorial21.cs
  *  Version:       1.0
  *  Desc:          Tutorial 2.1: SparseVector 
  *  Author:        Miha Grcar
@@ -181,9 +181,9 @@ namespace LatinoTutorials
             Console.WriteLine(matrix.ContainsAt(1, 1));
             Console.WriteLine(matrix.Contains("c"));
             Console.WriteLine(matrix.Contains("C"));
-            int row_idx = -1, col_idx = -1;
-            matrix.IndexOf("c", ref row_idx, ref col_idx);
-            Console.WriteLine("{0}, {1}", row_idx, col_idx);
+            int rowIdx = -1, colIdx = -1;
+            matrix.IndexOf("c", ref rowIdx, ref colIdx);
+            Console.WriteLine("{0}, {1}", rowIdx, colIdx);
             // check for rows and columns
             Console.WriteLine("Check for rows and columns ...");
             Console.WriteLine(matrix.ContainsColAt(0));

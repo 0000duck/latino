@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Text;
 using Latino.Model;
@@ -8,11 +8,11 @@ namespace BDocVisualizer
 {
     public class Bisociativity : ISimilarity<SparseVector<double>.ReadOnly>
     {
-        double m_k;
+        double mK;
 
         public Bisociativity(double k)
         {
-            m_k = k;
+            mK = k;
         }
 
         // *** ISimilarity<SparseVector<double>.ReadOnly> interface implementation ***
@@ -23,37 +23,37 @@ namespace BDocVisualizer
             Utils.ThrowException(b == null ? new ArgumentNullException("b") : null);
             double bisoc = 0;
             int i = 0, j = 0;
-            int a_count = a.Count;
-            int b_count = b.Count;
+            int aCount = a.Count;
+            int bCount = b.Count;
             int count = 0;
-            if (a_count == 0 || b_count == 0) { return 0; }
-            ArrayList<int> a_idx = a.Inner.InnerIdx;
-            ArrayList<double> a_dat = a.Inner.InnerDat;
-            ArrayList<int> b_idx = b.Inner.InnerIdx;
-            ArrayList<double> b_dat = b.Inner.InnerDat;
-            int a_idx_i = a_idx[0];
-            int b_idx_j = b_idx[0];
+            if (aCount == 0 || bCount == 0) { return 0; }
+            ArrayList<int> aIdx = a.Inner.InnerIdx;
+            ArrayList<double> aDat = a.Inner.InnerDat;
+            ArrayList<int> bIdx = b.Inner.InnerIdx;
+            ArrayList<double> bDat = b.Inner.InnerDat;
+            int aIdxI = aIdx[0];
+            int bIdxJ = bIdx[0];
             while (true)
             {
-                if (a_idx_i < b_idx_j)
+                if (aIdxI < bIdxJ)
                 {
-                    if (++i == a_count) { break; }
-                    a_idx_i = a_idx[i];
+                    if (++i == aCount) { break; }
+                    aIdxI = aIdx[i];
                 }
-                else if (a_idx_i > b_idx_j)
+                else if (aIdxI > bIdxJ)
                 {
-                    if (++j == b_count) { break; }
-                    b_idx_j = b_idx[j];
+                    if (++j == bCount) { break; }
+                    bIdxJ = bIdx[j];
                 }
                 else
                 {
-                    double tf_a = a_dat[i];
-                    double tf_b = b_dat[j];
-                    bisoc += Math.Pow(tf_a*tf_b,1.0/m_k)*(1.0-(Math.Abs(Math.Atan(tf_a)-Math.Atan(tf_b))/Math.Atan(1)));
+                    double tfA = aDat[i];
+                    double tfB = bDat[j];
+                    bisoc += Math.Pow(tfA*tfB,1.0/mK)*(1.0-(Math.Abs(Math.Atan(tfA)-Math.Atan(tfB))/Math.Atan(1)));
                     count++;
-                    if (++i == a_count || ++j == b_count) { break; }
-                    a_idx_i = a_idx[i];
-                    b_idx_j = b_idx[j];
+                    if (++i == aCount || ++j == bCount) { break; }
+                    aIdxI = aIdx[i];
+                    bIdxJ = bIdx[j];
                 }
             }
             return bisoc /*/ (double)count*/;
