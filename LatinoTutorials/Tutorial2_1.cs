@@ -2,7 +2,7 @@
  *
  *  This file is part of LATINO. See http://latino.sf.net
  *
- *  File:          Tutorial21.cs
+ *  File:          Tutorial2_1.cs
  *  Version:       1.0
  *  Desc:          Tutorial 2.1: SparseVector 
  *  Author:        Miha Grcar

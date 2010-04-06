@@ -2,7 +2,7 @@
  *
  *  This file is part of LATINO. See http://latino.sf.net
  *
- *  File:          Tutorial31.cs
+ *  File:          Tutorial3_1.cs
  *  Version:       1.0
  *  Desc:          Tutorial 3.1: Read-only adapters
  *  Author:        Miha Grcar
@@ -103,10 +103,11 @@ namespace LatinoTutorials
 
             // Create an ArrayList of sets of numbers and populate it.
 
-            ArrayList<Set<int>> array = new ArrayList<Set<int>>(new Set<int>[] { 
-                new Set<int>(new int[] { 1, 3, 5 }), 
-                new Set<int>(new int[] { 2, 4, 6 }), 
-                new Set<int>(new int[] { 1, 2, 3 }) });
+            ArrayList<Set<int>> array = new ArrayList<Set<int>>(
+                new Set<int>[] { 
+                    new Set<int>(new int[] { 1, 3, 5 }), 
+                    new Set<int>(new int[] { 2, 4, 6 }), 
+                    new Set<int>(new int[] { 1, 2, 3 }) });
             Console.WriteLine(array);
             // Output: ( { 1 3 5 } { 2 4 6 } { 1 2 3 } )
 
@@ -115,7 +116,8 @@ namespace LatinoTutorials
             // The easiest way to do it:
             ArrayList<Set<int>>.ReadOnly readOnlyArray = array;
             // This happens behind the curtains:
-            //ArrayList<Set<int>>.ReadOnly readOnlyArray = new ArrayList<Set<int>>.ReadOnly(array); 
+            //ArrayList<Set<int>>.ReadOnly readOnlyArray 
+            //  = new ArrayList<Set<int>>.ReadOnly(array); 
 
             Console.WriteLine(readOnlyArray); 
             // Output: ( { 1 3 5 } { 2 4 6 } { 1 2 3 } )
@@ -133,12 +135,14 @@ namespace LatinoTutorials
             // To create a "deeply" read-only instance, you need to make
             // contained instances read-only as well. 
 
-            ArrayList<Set<int>.ReadOnly>.ReadOnly readOnlyArray2 = new ArrayList<Set<int>.ReadOnly>(new Set<int>.ReadOnly[] { 
-                new Set<int>(new int[] { 1, 3, 5 }), 
-                new Set<int>(new int[] { 2, 4, 6 }), 
-                new Set<int>(new int[] { 1, 2, 3 }) });
+            ArrayList<Set<int>.ReadOnly>.ReadOnly readOnlyArray2 
+                = new ArrayList<Set<int>.ReadOnly>(
+                    new Set<int>.ReadOnly[] { 
+                        new Set<int>(new int[] { 1, 3, 5 }), 
+                        new Set<int>(new int[] { 2, 4, 6 }), 
+                        new Set<int>(new int[] { 1, 2, 3 }) });
             Console.WriteLine(readOnlyArray2); 
-            // Output: ( { 1 3 5 7 } { 2 4 6 } { 1 2 3 } )
+            // Output: ( { 1 3 5 } { 2 4 6 } { 1 2 3 } )
             //readOnlyArray2.Add(new Set<int>()); // Not possible.
             //readOnlyArray2[0].Add(7); // Also not possible.
         }

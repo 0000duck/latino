@@ -2,7 +2,7 @@
  *
  *  This file is part of LATINO. See http://latino.sf.net
  *
- *  File:          Tutorial22.cs
+ *  File:          Tutorial2_2.cs
  *  Version:       1.0
  *  Desc:          Tutorial 2.2: SparseMatrix
  *  Author:        Miha Grcar

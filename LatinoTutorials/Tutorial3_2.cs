@@ -2,7 +2,7 @@
  *
  *  This file is part of LATINO. See http://latino.sf.net
  *
- *  File:          Tutorial32.cs
+ *  File:          Tutorial3_2.cs
  *  Version:       1.0
  *  Desc:          Tutorial 3.2: Cloning
  *  Author:        Miha Grcar
@@ -23,10 +23,11 @@ namespace LatinoTutorials
         {
             // Create an ArrayList of sets of numbers and populate it.
 
-            ArrayList<Set<int>> array = new ArrayList<Set<int>>(new Set<int>[] { 
-                new Set<int>(new int[] { 1, 3, 5 }), 
-                new Set<int>(new int[] { 2, 4, 6 }), 
-                new Set<int>(new int[] { 1, 2, 3 }) });
+            ArrayList<Set<int>> array = new ArrayList<Set<int>>(
+                new Set<int>[] { 
+                    new Set<int>(new int[] { 1, 3, 5 }), 
+                    new Set<int>(new int[] { 2, 4, 6 }), 
+                    new Set<int>(new int[] { 1, 2, 3 }) });
             Console.WriteLine(array);
             // Output: ( { 1 3 5 } { 2 4 6 } { 1 2 3 } )
 

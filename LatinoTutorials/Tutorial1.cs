@@ -34,7 +34,7 @@ namespace LatinoTutorials
             Console.WriteLine(list);
             // sort descendingly
             Console.WriteLine("Sort descendingly ...");
-            list.Sort(new DescSort<int>());
+            list.Sort(DescSort<int>.Instance);
             Console.WriteLine(list);
             // shuffle 
             Console.WriteLine("Shuffle ...");
@@ -231,13 +231,13 @@ namespace LatinoTutorials
             Console.WriteLine(listKeyDat);
             // sort descendingly
             Console.WriteLine("Sort descendingly ...");
-            listKeyDat.Sort(new DescSort<KeyDat<double, string>>());
+            listKeyDat.Sort(DescSort<KeyDat<double, string>>.Instance);
             Console.WriteLine(listKeyDat);
             // find item with bisection
             Console.WriteLine("Find item with bisection ...");
-            int idx = listKeyDat.BinarySearch(new KeyDat<double, string>(3.3), new DescSort<KeyDat<double, string>>());
+            int idx = listKeyDat.BinarySearch(new KeyDat<double, string>(3.3), DescSort<KeyDat<double, string>>.Instance);
             Console.WriteLine(idx);
-            idx = listKeyDat.BinarySearch(new KeyDat<double, string>(3), new DescSort<KeyDat<double, string>>());
+            idx = listKeyDat.BinarySearch(new KeyDat<double, string>(3), DescSort<KeyDat<double, string>>.Instance);
             Console.WriteLine(~idx);
             // remove item
             Console.WriteLine("Remove item ...");
