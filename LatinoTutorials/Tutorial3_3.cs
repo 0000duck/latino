@@ -2,13 +2,11 @@
  *
  *  This file is part of LATINO. See http://latino.sf.net
  *
- *  File:          Tutorial3_3.cs
- *  Version:       1.0
- *  Desc:          Tutorial 3.3: Serialization
- *  Author:        Miha Grcar
- *  Created on:    Dec-2009
- *  Last modified: Dec-2009
- *  Revision:      Dec-2009
+ *  File:    Tutorial3_3.cs
+ *  Desc:    Tutorial 3.3: Serialization
+ *  Created: Dec-2009
+ *
+ *  Authors: Miha Grcar
  *
  **********************************************************************/
 

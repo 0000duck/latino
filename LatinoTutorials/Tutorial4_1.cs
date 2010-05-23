@@ -2,13 +2,11 @@
  *
  *  This file is part of LATINO. See http://latino.sf.net
  *
- *  File:          Tutorial4_1.cs
- *  Version:       1.0
- *  Desc:          Tutorial 4.1: Text preprocessing
- *  Author:        Miha Grcar
- *  Created on:    Apr-2010
- *  Last modified: Apr-2010
- *  Revision:      Apr-2010
+ *  File:    Tutorial4_1.cs
+ *  Desc:    Tutorial 4.1: Text preprocessing
+ *  Created: Apr-2010
+ *
+ *  Authors: Miha Grcar
  *
  **********************************************************************/
 
@@ -16,6 +14,7 @@ using System;
 using System.IO;
 using Latino;
 using Latino.TextMining;
+using Latino.Model;
 
 namespace LatinoTutorials
 {
@@ -53,10 +52,11 @@ namespace LatinoTutorials
             Console.WriteLine();
             // Output: "one" "two" "three"
 
-            // Load a document corpus from a file. Each line represents
-            // a separate document.
+            // Load a document corpus from a file. Each line in the file
+            // represents one document.
 
-            string[] docs = new string[] { "a", "b", "c" }; // !!!!!!!!!!!!!!!!
+            string[] docs 
+                = File.ReadAllLines("..\\..\\Data\\YahooFinance.txt");
 
             // Create a bag-of-words space.
 
@@ -75,12 +75,38 @@ namespace LatinoTutorials
             bowSpc.NormalizeVectors = true; // The TF-IDF vectors will 
                 // be normalized.
             bowSpc.CutLowWeightsPerc = 0.2; // The terms with the lowest
-                // weights representing the 20% of the overall weight 
-                // sum will be removed from each TF-IDF vector.
+                // weights, summing up to 20% of the overall weight sum,
+                // will be removed from each TF-IDF vector.
 
             bowSpc.Initialize(docs); // Initialize the BOW space.
 
-            // ...
+            // Output the vocabulary (the terms, their stems, 
+            // frequencies, and document frequencies) to the console.
+
+            StreamWriter stdOut 
+                = new StreamWriter(Console.OpenStandardOutput());
+            bowSpc.OutputStats(stdOut); 
+            stdOut.Close();
+
+            // Output the TF-IDF vector representing the description of
+            // Google to the console.
+
+            SparseVector<double>.ReadOnly googVec 
+                = bowSpc.BowVectors[4192 - 1]; // The description of 
+                // Google can be found at the row 4192 in the corpus.
+            foreach (IdxDat<double> termInfo in googVec)
+            {
+                Console.WriteLine("{0} : {1}", 
+                    bowSpc.Words[termInfo.Idx].MostFrequentForm, 
+                    termInfo.Dat);
+            }
+
+            // Extract the top 5 terms with the highest TF-IDF weights 
+            // from the vector representing Google.
+
+            Console.WriteLine(bowSpc.GetKeywordsStr(googVec, 5));
+            // Output: google, relevant, targeted advertising, search, 
+            // index
         }
     }
 }

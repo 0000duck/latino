@@ -1,16 +1,14 @@
-﻿/*=====================================================================;
+﻿/*==========================================================================;
  *
  *  This file is part of LATINO. See http://latino.sf.net
  *
- *  File:          Tutorial1.cs
- *  Version:       1.0
- *  Desc:          Tutorial 1: Fundamental data structures
- *  Author:        Miha Grcar
- *  Created on:    Dec-2009
- *  Last modified: Dec-2009
- *  Revision:      Dec-2009
+ *  File:    Tutorial1.cs
+ *  Desc:    Tutorial 1: Fundamental data structures
+ *  Created: Dec-2009
  *
- **********************************************************************/
+ *  Authors: Miha Grcar
+ *
+ ***************************************************************************/
 
 using System;
 using Latino;

@@ -1,16 +1,14 @@
-﻿/*=====================================================================;
+﻿/*==========================================================================;
  *
  *  This file is part of LATINO. See http://latino.sf.net
  *
- *  File:          Tutorial2_1.cs
- *  Version:       1.0
- *  Desc:          Tutorial 2.1: SparseVector 
- *  Author:        Miha Grcar
- *  Created on:    Dec-2009
- *  Last modified: Dec-2009
- *  Revision:      Dec-2009
+ *  File:    Tutorial2_1.cs
+ *  Desc:    Tutorial 2.1: SparseVector 
+ *  Created: Dec-2009
  *
- **********************************************************************/
+ *  Authors: Miha Grcar
+ *
+ ***************************************************************************/
 
 using System;
 using Latino;
