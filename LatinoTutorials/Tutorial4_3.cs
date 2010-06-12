@@ -13,13 +13,33 @@
 using System;
 using Latino.Web;
 using Latino.TextMining;
+using Latino.Persistance;
 
 namespace LatinoTutorials
 {
     class Program
     {
+        static void Test(params object[] waka)
+        {
+            Console.WriteLine(waka == null);
+        }
+
         static void Main(string[] args)
         {
+            DatabaseConnection dbCon = new DatabaseConnection();
+            dbCon.SetConnectionString(DatabaseType.SqlServer2005);
+            dbCon.Username = "sa";
+            dbCon.Password = "sa";
+            dbCon.Server = "\\SQLEXPRESS";
+            dbCon.Database = "SloWebCorpus";
+            dbCon.Connect();
+            // ...
+            dbCon.Disconnect();
+
+            //Console.WriteLine(WebUtils.NormalizeQuery("ata +fabo + - - -\"maMma   mia\"       -dec\"\" -\"\""));
+            Console.WriteLine("\"{0}\"", WebUtils.NormalizeQuery(""));
+            Test();
+            return;
             YahooSearchEngine searchEngine = new YahooSearchEngine("internet");
             searchEngine.Language = Language.French;
             searchEngine.ResultSetMaxSize = 300;
