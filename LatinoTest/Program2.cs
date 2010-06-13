@@ -10,7 +10,7 @@ namespace LatinoTest
     {
         static void Main(string[] args)
         {
-            LanguageDetector langDet = new LanguageDetector();
+            LanguageDetector langDet = new LanguageDetector(2);
             langDet.ReadCorpus(@"C:\Users\Miha\Desktop\LangDetectCorpus");
             //LanguageProfile p = langDet.FindMatchingLanguage("To je slovenski stavek. Čeprav ga naš detektor ne zazna pravilno. Mogoče šumniki pomagajo...");
             //Console.WriteLine(p.Code);
@@ -25,7 +25,7 @@ namespace LatinoTest
             {
                 foreach (LanguageProfile p2 in langDet.LanguageProfiles)
                 {
-                    w.Write("{0}\t", Math.Max(p.CalcSpearman(p2), p2.CalcSpearman(p)));
+                    //w.Write("{0}\t", Math.Max(p.CalcSpearman(p2), p2.CalcSpearman(p)));
                 }
                 w.WriteLine();
             }
