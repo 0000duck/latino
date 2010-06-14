@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Text;
 using Latino.TextMining;
 using System.IO;
+using Latino;
 
 namespace LatinoTest
 {
@@ -10,12 +11,19 @@ namespace LatinoTest
     {
         static void Main(string[] args)
         {
-            LanguageDetector langDet = new LanguageDetector();
-            langDet.ReadCorpus(@"C:\Users\mIHA\Desktop\langdet\MultextEast");
+            LanguageDetector langDet = LanguageDetector.GetLanguageDetectorPrebuilt();
+            //LanguageDetector langDet = new LanguageDetector();
+            //langDet.ReadCorpus(@"C:\Users\mIHA\Desktop\langdet");
             LanguageProfile p = langDet.FindMatchingLanguage("To je slovenski stavek. Čeprav ga naš detektor ne zazna pravilno. Mogoče šumniki pomagajo...");
             Console.WriteLine(p.Language);
             p = langDet.FindMatchingLanguage("Funny thing... This is a very short English sentence...");
             Console.WriteLine(p.Language);
+            foreach (LanguageProfile pr in langDet.LanguageProfiles)
+            {
+                BinarySerializer ser = new BinarySerializer(string.Format(@"C:\Users\mIHA\Desktop\langdet\{0}.ldp", pr.Language), FileMode.Create);
+                pr.Save(ser);
+                ser.Close();
+            }
             //Console.WriteLine(langDet.GetLanguageProfile("et"));
             //StreamWriter w = new StreamWriter("c:\\krneki\\langSim.txt");
             //foreach (LanguageProfile p in langDet.LanguageProfiles)
