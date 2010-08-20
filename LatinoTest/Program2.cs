@@ -16,7 +16,11 @@ namespace LatinoTest
             //langDet.ReadCorpus(@"C:\Users\mIHA\Desktop\langdet");
             LanguageProfile p = langDet.FindMatchingLanguage("To je slovenski stavek. Čeprav ga naš detektor ne zazna pravilno. Mogoče šumniki pomagajo...");
             Console.WriteLine(p.Language);
-            p = langDet.FindMatchingLanguage("Funny thing... This is a very short English sentence...");
+            p = langDet.FindMatchingLanguage("I love you.");
+            Console.WriteLine(p.Language);
+            p = langDet.FindMatchingLanguage("Baš te volim.");
+            Console.WriteLine(p.Language);
+            p = langDet.FindMatchingLanguage("Je t'aime.");
             Console.WriteLine(p.Language);
             foreach (LanguageProfile pr in langDet.LanguageProfiles)
             {
