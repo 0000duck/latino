@@ -57,18 +57,6 @@ namespace Latino
             {
                 PropagateSettings(mLogger.ActiveLevel, mLogger.ActiveOutputType, mLogger.ActiveProgressOutputType);
             }
-
-            //public void DebugOut(string prefix)
-            //{
-            //    Console.Write(prefix);
-            //    Console.Write(mLogger == null ? "null" : (mLogger.Name == null ? "root" : mLogger.Name));
-            //    if (mLogger == null) { Console.WriteLine(); }
-            //    else { Console.WriteLine(" ({0}; {1}; {2})", mLogger.ActiveLevel, mLogger.ActiveOutputType, mLogger.ActiveProgressOutputType); }
-            //    foreach (KeyValuePair<string, Node> item in mChildren)
-            //    {
-            //        item.Value.DebugOut(prefix + "\t");
-            //    }
-            //}
         }
 
         /* .-----------------------------------------------------------------------
@@ -309,12 +297,7 @@ namespace Latino
         {
             get { return mOutputWriter; }
             set { mOutputWriter = value; }
-        }
-
-        //public void DebugOut()
-        //{
-        //    mNode.DebugOut("");
-        //}        
+        }       
 
         private void Output(TextWriter writer, Level level, string funcName, Exception e, string message, params object[] args)
         {

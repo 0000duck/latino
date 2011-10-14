@@ -1,0 +1,27 @@
+
+.svn/
+bin/
+obj/
+*.bak
+*~
+*.dll
+*.dll.32
+*.dll.64
+
+# /Latino/
+/Latino/[Bb]in
+/Latino/obj
+/Latino/[Dd]ebug
+/Latino/[Rr]elease
+/Latino/*.user
+/Latino/*.aps
+/Latino/*.eto
+
+# /LatinoTest/
+/LatinoTest/[Bb]in
+/LatinoTest/obj
+/LatinoTest/[Dd]ebug
+/LatinoTest/[Rr]elease
+/LatinoTest/*.user
+/LatinoTest/*.aps
+/LatinoTest/*.eto
