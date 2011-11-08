@@ -150,7 +150,7 @@ namespace Latino.TextMining
     */
     public class BowSpace : IUnlabeledExampleCollection<SparseVector<double>.ReadOnly>, ISerializable
     {
-        private class WordStem
+        protected class WordStem
         {
             public string Word
                 = null;
@@ -158,33 +158,20 @@ namespace Latino.TextMining
                 = null;
         }
 
-        private ITokenizer mTokenizer
-            = new UnicodeTokenizer();
-        private Set<string>.ReadOnly mStopWords
-            = null;
-        private IStemmer mStemmer
-            = null;
-        private Dictionary<string, Word> mWordInfo
-            = new Dictionary<string, Word>();
-        private ArrayList<Word> mIdxInfo
-            = new ArrayList<Word>();
-        private ArrayList<SparseVector<double>.ReadOnly> mBowVectors
-            = new ArrayList<SparseVector<double>.ReadOnly>();
-        private int mMaxNGramLen
-            = 2;
-        private int mMinWordFreq
-            = 5;
-        private WordWeightType mWordWeightType
-            = WordWeightType.TermFreq;
-        private double mCutLowWeightsPerc
-            = 0.2;
-        private bool mNormalizeVectors
-            = true;
-        private bool mKeepWordForms
-            = false;
+        protected ITokenizer mTokenizer = new UnicodeTokenizer();
+        protected Set<string>.ReadOnly mStopWords = null;
+        protected IStemmer mStemmer = null;
+        protected Dictionary<string, Word> mWordInfo = new Dictionary<string, Word>();
+        protected ArrayList<Word> mIdxInfo = new ArrayList<Word>();
+        protected ArrayList<SparseVector<double>.ReadOnly> mBowVectors = new ArrayList<SparseVector<double>.ReadOnly>();
+        protected int mMaxNGramLen = 2;
+        protected int mMinWordFreq = 5;
+        protected WordWeightType mWordWeightType = WordWeightType.TermFreq;
+        protected double mCutLowWeightsPerc = 0.2;
+        protected bool mNormalizeVectors = true;
+        protected bool mKeepWordForms = false;
 
-        private static Logger mLogger
-            = Logger.GetLogger(typeof(BowSpace));
+        private static Logger mLogger = Logger.GetLogger(typeof(BowSpace));
 
         public BowSpace()
         {
@@ -283,7 +270,7 @@ namespace Latino.TextMining
             }
         }
 
-        private void CutLowWeights(ref SparseVector<double> vec)
+        protected void CutLowWeights(ref SparseVector<double> vec)
         {
             if (mCutLowWeightsPerc > 0)
             {
@@ -322,7 +309,7 @@ namespace Latino.TextMining
             }
         }
 
-        private void ProcessNGramsPass1(ArrayList<WordStem> nGrams, int startIdx, Set<string> docWords)
+        protected void ProcessNGramsPass1(ArrayList<WordStem> nGrams, int startIdx, Set<string> docWords)
         {
             string nGramStem = "";
             string nGram = "";
@@ -359,7 +346,7 @@ namespace Latino.TextMining
             }
         }
 
-        private void ProcessNGramsPass2(ArrayList<WordStem> nGrams, int startIdx, Dictionary<int, int> tfVec)
+        protected void ProcessNGramsPass2(ArrayList<WordStem> nGrams, int startIdx, Dictionary<int, int> tfVec)
         {
             string nGramStem = "";
             for (int i = startIdx; i < nGrams.Count; i++)
