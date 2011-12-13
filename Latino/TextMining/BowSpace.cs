@@ -158,9 +158,9 @@ namespace Latino.TextMining
                 = null;
         }
 
+        private Set<string>.ReadOnly mStopWords = null;
+        private IStemmer mStemmer = null;
         protected ITokenizer mTokenizer = new UnicodeTokenizer();
-        protected Set<string>.ReadOnly mStopWords = null;
-        protected IStemmer mStemmer = null;
         protected Dictionary<string, Word> mWordInfo = new Dictionary<string, Word>();
         protected ArrayList<Word> mIdxInfo = new ArrayList<Word>();
         protected ArrayList<SparseVector<double>.ReadOnly> mBowVectors = new ArrayList<SparseVector<double>.ReadOnly>();
@@ -631,7 +631,7 @@ namespace Latino.TextMining
             return bows; 
         }
 
-        private void ProcessDocumentNGrams(ArrayList<WordStem> nGrams, int startIdx, Dictionary<int, int> tfVec)
+        protected void ProcessDocumentNGrams(ArrayList<WordStem> nGrams, int startIdx, Dictionary<int, int> tfVec)
         {
             string nGramStem = "";
             string nGram = "";

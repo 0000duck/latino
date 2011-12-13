@@ -9,6 +9,9 @@ namespace Latino.TextMining
     {
         private static Logger mLogger = Logger.GetLogger(typeof(MultiLangBowSpace));
 
+        Dictionary<string, IStemmer> stemmers = new Dictionary<string, IStemmer>();
+        Dictionary<string, Set<string>.ReadOnly> stopWordDict = new Dictionary<string, Set<string>.ReadOnly>();
+
         public void Initialize(IEnumerable<KeyDat<string, string>> documents)
         {
             Initialize(documents, /*keepBowVectors=*/true);
@@ -16,8 +19,6 @@ namespace Latino.TextMining
 
         public ArrayList<SparseVector<double>> Initialize(IEnumerable<KeyDat<string, string>> documents, bool keepBowVectors)
         {
-            Dictionary<string, IStemmer> stemmers = new Dictionary<string, IStemmer>();
-            Dictionary<string, Set<string>.ReadOnly> stopWordDict = new Dictionary<string, Set<string>.ReadOnly>();
             Utils.ThrowException(documents == null ? new ArgumentNullException("documents") : null);
             Debug.Assert(documents != null, "Documents are always passed");
             mWordInfo.Clear();
@@ -132,6 +133,9 @@ namespace Latino.TextMining
             int docNum = 1;
             foreach (var document in documents)
             {
+                Set<string>.ReadOnly stopWords = stopWordDict[document.Second];
+                IStemmer stemmer = stemmers[document.Second];
+
                 mLogger.ProgressFast(this, "Initialize", "Document {0} / {1} ...", docNum++, docCount);
                 Dictionary<int, int> tfVec = new Dictionary<int, int>();
                 ArrayList<WordStem> nGrams = new ArrayList<WordStem>(mMaxNGramLen);
@@ -139,9 +143,9 @@ namespace Latino.TextMining
                 foreach (string token in mTokenizer)
                 {
                     string word = token.Trim().ToLower();
-                    if (mStopWords == null || !mStopWords.Contains(word))
+                    if (stopWords == null || !stopWords.Contains(word))
                     {
-                        string stem = mStemmer == null ? word : mStemmer.GetStem(word).Trim().ToLower();
+                        string stem = stemmer == null ? word : stemmer.GetStem(word).Trim().ToLower();
                         if (nGrams.Count < mMaxNGramLen)
                         {
                             WordStem wordStem = new WordStem();
@@ -207,6 +211,107 @@ namespace Latino.TextMining
             }
             return bows; 
 
+        }
+
+        public SparseVector<double> ProcessDocument(string document, string language)
+        {
+            Dictionary<int, int> tfVec = new Dictionary<int, int>();
+            ArrayList<WordStem> nGrams = new ArrayList<WordStem>(mMaxNGramLen);
+            mTokenizer.Text = document;
+
+            IStemmer stemmer;
+            Set<string>.ReadOnly stopWords;
+
+            if (stemmers.ContainsKey(language))
+            {
+                stemmer = stemmers[language];
+                stopWords = stopWordDict[language];
+            }
+            else
+            {
+                Language lang = TextMiningUtils.GetLanguage(language);
+
+                try
+                {
+                    TextMiningUtils.GetLanguageTools(lang, out stopWords, out stemmer);
+                }
+                catch (ArgumentNotSupportedException)   // Language tools to not exist, so fallback to english
+                {
+                    TextMiningUtils.GetLanguageTools(Language.English, out stopWords, out stemmer);
+                    mLogger.Error("Initialize", "Missing language tools for language code {0}.", language);
+                }
+
+                stemmers[language] = stemmer;
+                stopWordDict[language] = stopWords;
+            }
+
+            foreach (string token in mTokenizer)
+            {
+                string word = token.Trim().ToLower();
+                if (stopWords == null || !stopWords.Contains(word))
+                {
+                    string stem = stemmer == null ? word : stemmer.GetStem(word).Trim().ToLower();
+                    if (nGrams.Count < mMaxNGramLen)
+                    {
+                        WordStem wordStem = new WordStem();
+                        wordStem.Word = word;
+                        wordStem.Stem = stem;
+                        nGrams.Add(wordStem);
+                        if (nGrams.Count < mMaxNGramLen) { continue; }
+                    }
+                    else
+                    {
+                        WordStem wordStem = nGrams[0];
+                        wordStem.Word = word;
+                        wordStem.Stem = stem;
+                        for (int i = 0; i < mMaxNGramLen - 1; i++) { nGrams[i] = nGrams[i + 1]; }
+                        nGrams[mMaxNGramLen - 1] = wordStem;
+                    }
+                    ProcessDocumentNGrams(nGrams, 0, tfVec);
+                }
+            }
+            int startIdx = nGrams.Count == mMaxNGramLen ? 1 : 0;
+            for (int i = startIdx; i < nGrams.Count; i++)
+            {
+                ProcessDocumentNGrams(nGrams, i, tfVec);
+            }
+            SparseVector<double> docVec = new SparseVector<double>();
+            if (mWordWeightType == WordWeightType.TermFreq)
+            {
+                foreach (KeyValuePair<int, int> tfItem in tfVec)
+                {
+                    docVec.InnerIdx.Add(tfItem.Key);
+                    docVec.InnerDat.Add(tfItem.Value);
+                }
+            }
+            else if (mWordWeightType == WordWeightType.TfIdf)
+            {
+                foreach (KeyValuePair<int, int> tfItem in tfVec)
+                {
+                    double tfIdf = (double)tfItem.Value * mIdxInfo[tfItem.Key].mIdf;
+                    if (tfIdf > 0)
+                    {
+                        docVec.InnerIdx.Add(tfItem.Key);
+                        docVec.InnerDat.Add(tfIdf);
+                    }
+                }
+            }
+            else if (mWordWeightType == WordWeightType.LogDfTfIdf)
+            {
+                foreach (KeyValuePair<int, int> tfItem in tfVec)
+                {
+                    double tfIdf = (double)tfItem.Value * mIdxInfo[tfItem.Key].mIdf;
+                    if (tfIdf > 0)
+                    {
+                        docVec.InnerIdx.Add(tfItem.Key);
+                        docVec.InnerDat.Add(Math.Log(1 + mIdxInfo[tfItem.Key].mDocFreq) * tfIdf);
+                    }
+                }
+            }
+            docVec.Sort();
+            CutLowWeights(ref docVec);
+            if (mNormalizeVectors) { Utils.TryNrmVecL2(docVec); }
+            return docVec;
         }
     }
 }
