@@ -409,7 +409,7 @@ namespace Latino.Model
             }
         }
 
-        public static double[] GetDotProductSimilarity(SparseMatrix<double>.ReadOnly trMtx, int datasetCount, SparseVector<double>.ReadOnly vec)
+        public static double[] GetDotProductSimilarity(SparseMatrix<double> trMtx, int datasetCount, SparseVector<double> vec)
         {
             // TODO: exceptions on dataset count (?)
             Utils.ThrowException(trMtx == null ? new ArgumentNullException("trMtx") : null);
@@ -419,7 +419,7 @@ namespace Latino.Model
             return simVec;
         }
 
-        public static SparseVector<double> GetDotProductSimilarity(SparseMatrix<double>.ReadOnly trMtx, int datasetCount, SparseVector<double>.ReadOnly vec, double thresh)
+        public static SparseVector<double> GetDotProductSimilarity(SparseMatrix<double> trMtx, int datasetCount, SparseVector<double> vec, double thresh)
         {
             // TODO: exceptions on dataset count (?)
             Utils.ThrowException(thresh < 0 ? new ArgumentOutOfRangeException("thresh") : null);
@@ -436,7 +436,7 @@ namespace Latino.Model
             return sparseVec;
         }
 
-        public static double[] GetDotProductSimilarity(IUnlabeledExampleCollection<SparseVector<double>> dataset, SparseVector<double>.ReadOnly vec)
+        public static double[] GetDotProductSimilarity(IUnlabeledExampleCollection<SparseVector<double>> dataset, SparseVector<double> vec)
         {
             Utils.ThrowException(dataset == null ? new ArgumentNullException("dataset") : null);
             Utils.ThrowException(vec == null ? new ArgumentNullException("vec") : null);
@@ -446,7 +446,7 @@ namespace Latino.Model
             return simVec;
         }
 
-        public static SparseVector<double> GetDotProductSimilarity(IUnlabeledExampleCollection<SparseVector<double>> dataset, SparseVector<double>.ReadOnly vec, double thresh)
+        public static SparseVector<double> GetDotProductSimilarity(IUnlabeledExampleCollection<SparseVector<double>> dataset, SparseVector<double> vec, double thresh)
         {
             Utils.ThrowException(thresh < 0 ? new ArgumentOutOfRangeException("thresh") : null);
             double[] simVec = GetDotProductSimilarity(dataset, vec); // throws ArgumentNullException
