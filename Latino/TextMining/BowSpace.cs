@@ -311,38 +311,42 @@ namespace Latino.TextMining
 
         protected void ProcessNGramsPass1(ArrayList<WordStem> nGrams, int startIdx, Set<string> docWords)
         {
-            string nGramStem = "";
-            string nGram = "";
+            var nGramStem = new StringBuilder();
+            var nGram = new StringBuilder();
+
             for (int i = startIdx; i < nGrams.Count; i++)
             {
-                nGram += nGrams[i].Word;
-                nGramStem += nGrams[i].Stem;
-                if (!mWordInfo.ContainsKey(nGramStem))
+                nGram.Append(nGrams[i].Word);
+                nGramStem.Append(nGrams[i].Word);
+
+                var sNGram = nGram.ToString();
+                var sNGramStem = nGramStem.ToString();
+                if (!mWordInfo.ContainsKey(sNGramStem))
                 {
-                    Word nGramInfo = new Word(nGram, nGramStem);
-                    mWordInfo.Add(nGramStem, nGramInfo);
-                    docWords.Add(nGramStem);
+                    Word nGramInfo = new Word(sNGram, sNGramStem);
+                    mWordInfo.Add(sNGramStem, nGramInfo);
+                    docWords.Add(sNGramStem);
                 }
                 else
                 {
-                    Word nGramInfo = mWordInfo[nGramStem];
-                    if (!docWords.Contains(nGramStem))
+                    Word nGramInfo = mWordInfo[sNGramStem];
+                    if (!docWords.Contains(sNGramStem))
                     {
-                        docWords.Add(nGramStem);
+                        docWords.Add(sNGramStem);
                         nGramInfo.mDocFreq++;
                     }
                     nGramInfo.mFreq++;
-                    if (!nGramInfo.mForms.ContainsKey(nGram))
+                    if (!nGramInfo.mForms.ContainsKey(sNGram))
                     {
-                        nGramInfo.mForms.Add(nGram, 1);
+                        nGramInfo.mForms.Add(sNGram, 1);
                     }
                     else
                     {
-                        nGramInfo.mForms[nGram]++;
+                        nGramInfo.mForms[sNGram]++;
                     }
                 }
-                nGram += " ";
-                nGramStem += " ";
+                nGram.Append(" ");
+                nGramStem.Append(" ");
             }
         }
 
