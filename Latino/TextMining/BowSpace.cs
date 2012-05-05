@@ -312,12 +312,12 @@ namespace Latino.TextMining
             }
         }
 
-        private void CutLowWeights(ref SparseVector<double> vec)
+        protected void CutLowWeights(ref SparseVector<double> vec)
         {
             CutLowWeights(ref vec, mCutLowWeightsPerc);
         }
 
-        private void ProcessNGramsPass1(ArrayList<WordStem> nGrams, int startIdx, Set<string> docWords)
+        protected void ProcessNGramsPass1(ArrayList<WordStem> nGrams, int startIdx, Set<string> docWords)
         {
             var nGramStem = new StringBuilder();
             var nGram = new StringBuilder();

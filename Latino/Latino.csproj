@@ -123,6 +123,7 @@
     <Compile Include="TextMining\LemmaSharp\LemmatizerPrebuiltCompressed.cs" />
     <Compile Include="TextMining\LemmaSharp\LemmatizerPrebuiltData.cs" />
     <Compile Include="TextMining\LemmaSharp\LemmatizerPrebuiltFull.cs" />
+    <Compile Include="TextMining\MultiLangBowSpace.cs" />
     <Compile Include="TextMining\SimpleTokenizer.cs" />
     <Compile Include="WebMining\BoilerplateRemover.cs" />
     <Compile Include="TextMining\CustomStemmer.cs" />
