@@ -6,15 +6,16 @@
  *  Desc:    Document-corpus database writer
  *  Created: Jan-2011
  *
- *  Authors: Miha Grcar
+ *  Author:  Miha Grcar
  *
  ***************************************************************************/
 
 using System;
+using System.Text;
 using System.Xml;
 using System.IO;
+using Latino.Persistance;
 using Latino.Workflows.TextMining;
-using System.Text;
 
 namespace Latino.Workflows.Persistance
 {
@@ -26,11 +27,32 @@ namespace Latino.Workflows.Persistance
     */
     public class DocumentCorpusWriterComponent : StreamDataConsumer
     {
+        private DatabaseConnection mConnection
+            = new DatabaseConnection();
         private static object mLock
             = new object();
+        private bool mWriteToDatabase;
+        private string mXmlDataRoot;
+        private string mHtmlDataRoot;
+        private bool mIsDumpWriter
+            = false;
 
-        public DocumentCorpusWriterComponent() : base(typeof(DocumentCorpusWriterComponent))
+        public DocumentCorpusWriterComponent(string dbConnectionString, string xmlDataRoot, string htmlDataRoot) : base(typeof(DocumentCorpusWriterComponent))
         {
+            mWriteToDatabase = dbConnectionString != null;
+            mXmlDataRoot = xmlDataRoot;
+            mHtmlDataRoot = htmlDataRoot;
+            if (mWriteToDatabase)
+            {
+                mConnection.ConnectionString = dbConnectionString; // throws ArgumentNullException
+                mConnection.Connect(); // throws OleDbException           
+            }
+        }
+
+        public bool IsDumpWriter
+        {
+            get { return mIsDumpWriter; }
+            set { mIsDumpWriter = value; }
         }
 
         protected override void ConsumeData(IDataProducer sender, object data)
@@ -46,29 +68,93 @@ namespace Latino.Workflows.Persistance
             XmlWriter writer = XmlWriter.Create(stringWriter = new StringWriter(), xmlSettings); 
             corpus.WriteXml(writer, /*writeTopElement=*/true);
             writer.Close();
-            DateTime now = DateTime.Now;
-            string recordId = now.ToString("HH_mm_ss_") + corpusId;
-            string path = string.Format(@"C:\Work\DacqPipe\Data\{0}\{1}\{2}\", now.Year, now.Month, now.Day);
-            //string path = string.Format(@"E:\Users\miha\Work\DacqPipeBig_6\Data\{0}\{1}\{2}\", now.Year, now.Month, now.Day);
-            string pathHtml = string.Format(@"C:\Work\DacqPipe\DataHtml\{0}\{1}\{2}\{3}\", now.Year, now.Month, now.Day, recordId);
-            //string pathHtml = string.Format(@"E:\Users\miha\Work\DacqPipeBig_6\DataHtml\{0}\{1}\{2}\{3}\", now.Year, now.Month, now.Day, recordId);
-            foreach (string p in new string[] { path, pathHtml })
+            //DateTime now = DateTime.Now;
+            //string recordId = now.ToString("HH_mm_ss_") + corpusId;
+            DateTime timeEnd = DateTime.Parse(corpus.Features.GetFeatureValue("timeEnd"));
+            string recordId = timeEnd.ToString("HH_mm_ss_") + corpusId;
+            // write to file
+            if (mXmlDataRoot != null)
             {
-                if (!Directory.Exists(p))
+                string path = string.Format(@"{3}\{0}\{1}\{2}\", timeEnd.Year, timeEnd.Month, timeEnd.Day, mXmlDataRoot.TrimEnd('\\'));                
+                if (!Directory.Exists(path))
                 {
                     lock (mLock)
                     {
-                        if (!Directory.Exists(p))
-                        {
-                            Directory.CreateDirectory(p);
-                        }
+                        if (!Directory.Exists(path)) { Directory.CreateDirectory(path); }
                     }
                 }
+                StreamWriter w = new StreamWriter(path + recordId + ".xml", /*append=*/false, Encoding.UTF8);
+                w.Write(stringWriter.ToString().Replace("<?xml version=\"1.0\" encoding=\"utf-16\"?>", "<?xml version=\"1.0\" encoding=\"utf-8\"?>"));
+                w.Close();
             }
-            StreamWriter w = new StreamWriter(path + recordId + ".xml", /*append=*/false, Encoding.UTF8);
-            w.Write(stringWriter.ToString().Replace("<?xml version=\"1.0\" encoding=\"utf-16\"?>", "<?xml version=\"1.0\" encoding=\"utf-8\"?>"));
-            w.Close();
-            corpus.MakeHtmlPage(pathHtml, /*inlineCss=*/true);
+            if (mHtmlDataRoot != null)
+            {
+                string pathHtml = string.Format(@"{4}\{0}\{1}\{2}\{3}\", timeEnd.Year, timeEnd.Month, timeEnd.Day, recordId, mHtmlDataRoot.TrimEnd('\\'));
+                if (!Directory.Exists(pathHtml))
+                {
+                    lock (mLock)
+                    {
+                        if (!Directory.Exists(pathHtml)) { Directory.CreateDirectory(pathHtml); }
+                    }
+                }
+                corpus.MakeHtmlPage(pathHtml, /*inlineCss=*/true);
+            }
+            // write to database
+            if (mWriteToDatabase)
+            {
+                bool success = mConnection.ExecuteNonQuery("insert into Corpora (id, title, language, sourceUrl, timeStart, timeEnd, siteId, dump) values (?, ?, ?, ?, ?, ?, ?, ?)",
+                    corpusId,
+                    Utils.Truncate(corpus.Features.GetFeatureValue("title"), 400),
+                    Utils.Truncate(corpus.Features.GetFeatureValue("language"), 100),
+                    Utils.Truncate(corpus.Features.GetFeatureValue("sourceUrl"), 400),
+                    Utils.Truncate(corpus.Features.GetFeatureValue("timeStart"), 26),
+                    Utils.Truncate(corpus.Features.GetFeatureValue("timeEnd"), 26),
+                    Utils.Truncate(corpus.Features.GetFeatureValue("siteId"), 100),
+                    mIsDumpWriter
+                );
+                if (!success) { mLogger.Warn("ConsumeData", "Unable to write to database."); }
+                foreach (Document document in corpus.Documents)
+                {
+                    string documentId = new Guid(document.Features.GetFeatureValue("guid")).ToString("N");
+                    string bpCharCountStr = document.Features.GetFeatureValue("bprBoilerplateCharCount");
+                    string contentCharCountStr = document.Features.GetFeatureValue("bprContentCharCount");
+                    success = mConnection.ExecuteNonQuery("insert into Documents (id, corpusId, name, description, category, link, responseUrl, urlKey, time, pubDate, mimeType, contentType, charSet, contentLength, detectedLanguage, detectedCharRange, domain, bpCharCount, contentCharCount, dump) values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+                        documentId,
+                        corpusId,
+                        Utils.Truncate(document.Name, 400),
+                        Utils.Truncate(document.Features.GetFeatureValue("description"), 400),
+                        Utils.Truncate(document.Features.GetFeatureValue("category"), 400),
+                        Utils.Truncate(document.Features.GetFeatureValue("link"), 400),
+                        Utils.Truncate(document.Features.GetFeatureValue("responseUrl"), 400),
+                        Utils.Truncate(document.Features.GetFeatureValue("urlKey"), 400),
+                        Utils.Truncate(document.Features.GetFeatureValue("time"), 26),
+                        Utils.Truncate(document.Features.GetFeatureValue("pubDate"), 26),
+                        Utils.Truncate(document.Features.GetFeatureValue("mimeType"), 80),
+                        Utils.Truncate(document.Features.GetFeatureValue("contentType"), 40),
+                        Utils.Truncate(document.Features.GetFeatureValue("charSet"), 40),
+                        Convert.ToInt32(document.Features.GetFeatureValue("contentLength")),
+                        Utils.Truncate(document.Features.GetFeatureValue("detectedLanguage"), 100),
+                        Utils.Truncate(document.Features.GetFeatureValue("detectedCharRange"), 100),                        
+                        Utils.Truncate(document.Features.GetFeatureValue("domainName"), 100),
+                        bpCharCountStr == null ? null : (object)Convert.ToInt32(bpCharCountStr),
+                        contentCharCountStr == null ? null : (object)Convert.ToInt32(contentCharCountStr),
+                        mIsDumpWriter
+                    );
+                    if (!success) { mLogger.Warn("ConsumeData", "Unable to write to database."); }
+                }
+            }
+        }
+
+        // *** IDisposable interface implementation ***
+
+        public new void Dispose()
+        {
+            base.Dispose();
+            if (mWriteToDatabase)
+            {
+                try { mConnection.Disconnect(); }
+                catch { }
+            }
         }
     }
 }

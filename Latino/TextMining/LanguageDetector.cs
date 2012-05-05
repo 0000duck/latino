@@ -1,6 +1,6 @@
 ﻿/*==========================================================================;
  *
- *  This file is part of LATINO. See http://latino.sf.net
+ *  This file is part of LATINO. See http://www.latinolib.org
  *
  *  File:    LanguageDetector.cs
  *  Desc:    Language detector based on character n-grams
@@ -133,28 +133,45 @@ namespace Latino.TextMining
         {
             Utils.ThrowException(languageProfiles.Count == 0 ? new InvalidOperationException() : null);
             Utils.ThrowException(p == null ? new ArgumentNullException("p") : null);
-            Utils.ThrowException((!p.IsRanked /*|| p.N != n*/) ? new ArgumentValueException("p") : null);
+            Utils.ThrowException((!p.IsRanked) ? new ArgumentValueException("p") : null);
             Utils.ThrowException(cutOff < 1 ? new ArgumentOutOfRangeException("cutOff") : null);            
-            // finds language most similar to the profile 'p'
             LanguageProfile matchingLang = null;
             double minDist = Double.MaxValue;
-            double dist;
             foreach (LanguageProfile l in languageProfiles)
             {
-                dist = p.CalcOutOfPlace(l, cutOff);
+                double dist = p.CalcOutOfPlace(l, cutOff);
                 if (dist < minDist)
                 {
                     matchingLang = l;
                     minDist = dist;
                 }
             }
-
             return matchingLang;
+        }
+
+        public ArrayList<KeyDat<double, LanguageProfile>> FindMatchingLanguageAll(NGramProfile p, int cutOff)
+        {
+            Utils.ThrowException(languageProfiles.Count == 0 ? new InvalidOperationException() : null);
+            Utils.ThrowException(p == null ? new ArgumentNullException("p") : null);
+            Utils.ThrowException((!p.IsRanked) ? new ArgumentValueException("p") : null);
+            Utils.ThrowException(cutOff < 1 ? new ArgumentOutOfRangeException("cutOff") : null);
+            ArrayList<KeyDat<double, LanguageProfile>> result = new ArrayList<KeyDat<double, LanguageProfile>>();
+            foreach (LanguageProfile l in languageProfiles)
+            {
+                double dist = p.CalcOutOfPlace(l, cutOff);
+                result.Add(new KeyDat<double, LanguageProfile>(dist, l));
+            }
+            return result;
         }
         
         public LanguageProfile FindMatchingLanguage(NGramProfile p)
         {
             return FindMatchingLanguage(p, /*cutOff=*/500); // throws ArgumentNullException, ArgumentValueException, InvalidOperationException 
+        }
+
+        public ArrayList<KeyDat<double, LanguageProfile>> FindMatchingLanguageAll(NGramProfile p)
+        {
+            return FindMatchingLanguageAll(p, /*cutOff=*/500); // throws ArgumentNullException, ArgumentValueException, InvalidOperationException 
         }
 
         public LanguageProfile FindMatchingLanguage(string str)
@@ -165,6 +182,16 @@ namespace Latino.TextMining
             p.AddTokensFromString(str);
             p.DoRanking();
             return FindMatchingLanguage(p);
+        }
+
+        public ArrayList<KeyDat<double, LanguageProfile>> FindMatchingLanguageAll(string str)
+        {
+            Utils.ThrowException(languageProfiles.Count == 0 ? new InvalidOperationException() : null);
+            Utils.ThrowException(str == null ? new ArgumentNullException("str") : null);
+            NGramProfile p = new NGramProfile(n);
+            p.AddTokensFromString(str);
+            p.DoRanking();
+            return FindMatchingLanguageAll(p);
         }
 
         public void Clear()
@@ -319,9 +346,12 @@ namespace Latino.TextMining
         {
             Utils.ThrowException(str == null ? new ArgumentNullException("str") : null);
             Utils.ThrowException(isRanked ? new InvalidOperationException() : null);
-            RegexTokenizer tokenizer = new RegexTokenizer();
-            tokenizer.IgnoreUnknownTokens = true;
-            tokenizer.TokenRegex = @"[^\s][^\s]+";
+            //RegexTokenizer tokenizer = new RegexTokenizer();
+            //tokenizer.IgnoreUnknownTokens = true;
+            //tokenizer.TokenRegex = @"[^\s][^\s]+";
+            SimpleTokenizer tokenizer = new SimpleTokenizer();
+            tokenizer.MinTokenLen = 2;
+            tokenizer.Type = TokenizerType.AllChars;
             tokenizer.Text = str;
             AddTokens(tokenizer);
         }
@@ -331,9 +361,12 @@ namespace Latino.TextMining
             Utils.ThrowException(!Utils.VerifyFileNameOpen(file) ? new ArgumentValueException("file") : null);
             Utils.ThrowException(isRanked ? new InvalidOperationException() : null);
             StreamReader reader = Utils.GetUnicodeSignature(file) != null ? new StreamReader(file) : new StreamReader(file, Encoding.GetEncoding("ISO-8859-1"));
-            RegexTokenizer tokenizer = new RegexTokenizer();
-            tokenizer.IgnoreUnknownTokens = true;
-            tokenizer.TokenRegex = @"[^\s][^\s]+";
+            //RegexTokenizer tokenizer = new RegexTokenizer();
+            //tokenizer.IgnoreUnknownTokens = true;
+            //tokenizer.TokenRegex = @"[^\s][^\s]+";
+            SimpleTokenizer tokenizer = new SimpleTokenizer();
+            tokenizer.MinTokenLen = 2;
+            tokenizer.Type = TokenizerType.AllChars;
             string line;
             while ((line = reader.ReadLine()) != null)
             {

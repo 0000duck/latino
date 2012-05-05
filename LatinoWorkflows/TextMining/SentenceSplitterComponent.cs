@@ -6,7 +6,7 @@
  *  Desc:    English sentence splitter component
  *  Created: Jul-2011
  *
- *  Authors: Miha Grcar
+ *  Author:  Miha Grcar
  *
  ***************************************************************************/
 
@@ -29,7 +29,7 @@ namespace Latino.Workflows.TextMining
 
         public SentenceSplitterComponent() : base(typeof(SentenceSplitterComponent))
         {
-            mBlockSelector = "TextBlock/.*";
+            mBlockSelector = "TextBlock";
         }
 
         private void GetTrimOffsets(string str, out int startOffset, out int endOffset)
@@ -47,9 +47,9 @@ namespace Latino.Workflows.TextMining
             }
         }
 
-        protected override void ProcessDocument(Document document)
+        public/*protected*/ override void ProcessDocument(Document document)
         {
-            string contentType = document.Features.GetFeatureValue("_contentType");
+            string contentType = document.Features.GetFeatureValue("contentType");
             if (contentType != "Text") { return; }
             try
             {

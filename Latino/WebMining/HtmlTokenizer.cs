@@ -1,12 +1,12 @@
 /*==========================================================================;
  *
- *  This file is part of LATINO. See http://latino.sf.net
+ *  This file is part of LATINO. See http://www.latinolib.org
  *
  *  File:    HtmlTokenizer.cs
  *  Desc:    Tokenizer for HTML documents (based on HtmlAgilityPack)
  *  Created: Apr-2011
  *
- *  Authors: Miha Grcar
+ *  Author:  Miha Grcar
  *
  ***************************************************************************/
 
@@ -124,14 +124,10 @@ namespace Latino.WebMining
             = @"[0-9][\.,0-9]*";
         private static string mWordRegexStr
             = @"\p{L}+";
-        //private static string mTagRegexStr
-        //    = @"<(?<startSlash>/?)(?<tagName>[^\s]+).*?(?<endSlash>/?)>";
         private static Regex mNumberRegex 
             = new Regex("^" + mNumberRegexStr + "$", RegexOptions.Compiled);
         private static Regex mWordRegex
             = new Regex("^" + mWordRegexStr + "$", RegexOptions.Compiled);
-        //private static Regex mTagRegex
-        //    = new Regex("^" + mTagRegexStr + "$", RegexOptions.Compiled | RegexOptions.Singleline);
         
         private ArrayList<Token> mTokenList
             = new ArrayList<Token>();
@@ -199,7 +195,7 @@ namespace Latino.WebMining
                     token.mStartIndex = node._outerstartindex;
                     token.mLength = node._innerstartindex - node._outerstartindex;
                     token.mTokenStr = mText.Substring(token.mStartIndex, token.mLength);
-                    token.mTagName = node.Name.ToString();
+                    token.mTagName = node.Name.ToLower();
                     tokens = new Token[] { token };
                 }
                 // case 2: open tag like <i> without </i> (other cases)
@@ -339,33 +335,6 @@ namespace Latino.WebMining
             }
             return TokenType.Unknown;
         }
-
-        //public static string NormalizeToken(string token, IStemmer stemmer)
-        //{
-        //    Utils.ThrowException(token == null ? new ArgumentNullException("token") : null);
-        //    Match m;
-        //    if ((m = mTagRegex.Match(token)).Success)
-        //    {
-        //        if (m.Result("${startSlash}") == "/")
-        //        {
-        //            return "</" + m.Result("${tagName}") + ">";
-        //        }
-        //        else if (m.Result("${endSlash}") == "/")
-        //        {
-        //            return "<" + m.Result("${tagName}") + "/>";
-        //        }
-        //        return "<" + m.Result("${tagName}") + ">";
-        //    }
-        //    else if (mWordRegex.Match(token).Success)
-        //    {
-        //        return stemmer != null ? stemmer.GetStem(token) : token;
-        //    }
-        //    else if (mNumberRegex.Match(token).Success)
-        //    {
-        //        return "1";
-        //    }
-        //    return token;
-        //}
 
         // *** ITokenizer interface implementation ***
 

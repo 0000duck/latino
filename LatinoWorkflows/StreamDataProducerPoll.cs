@@ -6,7 +6,7 @@
  *  Desc:    Stream data producer base class (polling)
  *  Created: Dec-2010
  *
- *  Authors: Miha Grcar
+ *  Author:  Miha Grcar
  *
  ***************************************************************************/
 
@@ -25,12 +25,21 @@ namespace Latino.Workflows
     {
         private int mTimeBetweenPolls
             = 1;
+        private bool mRandomDelayAtStart
+            = true; // TODO: make this configurable
+        private Random mRng
+            = new Random();
+
         protected bool mStopped
             = false;
         private Thread mThread
             = null;
         
         public StreamDataProducerPoll(string loggerBaseName) : base(loggerBaseName)
+        {
+        }
+
+        public StreamDataProducerPoll(Type loggerType) : this(loggerType.ToString())
         {
         }
 
@@ -46,16 +55,17 @@ namespace Latino.Workflows
 
         private void ProduceDataLoop()
         {
+            if (mRandomDelayAtStart)
+            {
+                Thread.Sleep(mRng.Next(0, mTimeBetweenPolls));
+            }            
             while (!mStopped)
             {
                 try
                 {
                     // produce and dispatch data
                     object data = ProduceData();                    
-                    if (data != null)
-                    {
-                        DispatchData(data);
-                    }
+                    DispatchData(data);
                 }
                 catch (Exception exc)
                 {

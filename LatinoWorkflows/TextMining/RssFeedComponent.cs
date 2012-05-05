@@ -6,7 +6,7 @@
  *  Desc:    RSS feed polling component
  *  Created: Dec-2010
  *
- *  Authors: Miha Grcar
+ *  Author:  Miha Grcar
  *
  ***************************************************************************/
 
@@ -24,8 +24,9 @@ using System.Data;
 using System.Text.RegularExpressions;
 using Latino.Web;
 using Latino.Persistance;
+using Latino.Workflows.TextMining;
 
-namespace Latino.Workflows.TextMining
+namespace Latino.Workflows.WebMining
 {
     /* .-----------------------------------------------------------------------
        |
@@ -35,6 +36,12 @@ namespace Latino.Workflows.TextMining
     */
     public class RssFeedComponent : StreamDataProducerPoll
     {
+        /* .-----------------------------------------------------------------------
+           |
+           |  Enum ContentType
+           |
+           '-----------------------------------------------------------------------
+        */
         [Flags]
         private enum ContentType
         {
@@ -45,18 +52,20 @@ namespace Latino.Workflows.TextMining
         }
 
         private ArrayList<string> mSources;
+        private string mSiteId
+            = null;
+
         private bool mIncludeRawData
             = false;
         private bool mIncludeRssXml
             = false;
+        
         private int mPolitenessSleep
             = 1000;
-        private string mSiteId
-            = null;
-        private DatabaseConnection mHistoryDatabase
-            = null;
+                
         private RssHistory mHistory
             = new RssHistory();
+        
         private static Set<string> mChannelElements
             = new Set<string>(new string[] { "title", "link", "description", "language", "copyright", "managingEditor", "pubDate", "category" });
         private static Set<string> mItemElements
@@ -73,6 +82,8 @@ namespace Latino.Workflows.TextMining
             = 10485760;
         private ContentType mContentFilter // *** make this adjustable
             = ContentType.Html | ContentType.Text;
+        private int mMaxDocsPerCorpus
+            = 50;//-1; // *** make this adjustable
 
         private ContentType GetContentType(string mimeType)
         {
@@ -94,13 +105,13 @@ namespace Latino.Workflows.TextMining
             }
         }
 
-        public RssFeedComponent(string siteId) : base(typeof(RssFeedComponent).ToString())
+        public RssFeedComponent(string siteId) : base(typeof(RssFeedComponent))
         {
             mSiteId = siteId;
             mSources = new ArrayList<string>();
         }
 
-        public RssFeedComponent(string rssUrl, string siteId) : base(typeof(RssFeedComponent).ToString())
+        public RssFeedComponent(string rssUrl, string siteId) : base(typeof(RssFeedComponent))
         {            
             Utils.ThrowException(rssUrl == null ? new ArgumentNullException("rssUrl") : null);
             mSiteId = siteId;
@@ -108,7 +119,7 @@ namespace Latino.Workflows.TextMining
             TimeBetweenPolls = 300000; // poll every 5 minutes by default
         }
 
-        public RssFeedComponent(IEnumerable<string> rssList, string siteId) : base(typeof(RssFeedComponent).ToString())
+        public RssFeedComponent(IEnumerable<string> rssList, string siteId) : base(typeof(RssFeedComponent))
         {
             Utils.ThrowException(rssList == null ? new ArgumentNullException("rssList") : null);
             mSiteId = siteId;
@@ -160,21 +171,15 @@ namespace Latino.Workflows.TextMining
             }
         }
 
-        public DatabaseConnection HistoryDatabase
-        {
-            get { return mHistoryDatabase; }
-            set { mHistoryDatabase = value; }
-        }
-
         public string SiteId
         {
             get { return mSiteId; }
         }
 
-        public void LoadHistory()
+        public void Initialize(DatabaseConnection dbConnection)
         {
-            Utils.ThrowException(mHistoryDatabase == null ? new InvalidOperationException() : null);
-            mHistory.Load(mSiteId, mHistoryDatabase);
+            Utils.ThrowException(dbConnection == null ? new ArgumentNullException("dbConnection") : null);
+            mHistory.Load(mSiteId, dbConnection);
         }
 
         private static Guid MakeGuid(string title, string desc, string pubDate)
@@ -183,7 +188,7 @@ namespace Latino.Workflows.TextMining
             return new Guid(md5.ComputeHash(Encoding.UTF8.GetBytes(string.Format("{0} {1} {2}", title, desc, pubDate))));
         }
 
-        private void ProcessItem(Dictionary<string, string> itemAttr, DocumentCorpus corpus, string rssXmlUrl)
+        private void ProcessItem(Dictionary<string, string> itemAttr, ArrayList<DocumentCorpus> corpora, string rssXmlUrl)
         {
             try
             {
@@ -195,32 +200,37 @@ namespace Latino.Workflows.TextMining
                 itemAttr.TryGetValue("pubDate", out pubDate);
                 Guid guid = MakeGuid(name, desc, pubDate);
                 mLogger.Info("ProcessItem", "Found item \"{0}\".", Utils.ToOneLine(name, /*compact=*/true));
-                if (!mHistory.CheckHistory(guid, rssXmlUrl, mSiteId, mHistoryDatabase))
+                if (!mHistory.CheckHistory(guid))
                 {
                     DateTime time = DateTime.Now;
                     string content = "";
                     if (itemAttr.ContainsKey("link") && itemAttr["link"].Trim() != "")
                     {
                         // get referenced Web page
-                        mLogger.Info("ProcessItem", "Getting HTML from {0} ...", itemAttr["link"]);
+                        mLogger.Info("ProcessItem", "Getting HTML from {0} ...", Utils.ToOneLine(itemAttr["link"], /*compact=*/true));
                         string mimeType, charSet;
-                        byte[] bytes = WebUtils.GetWebResource(itemAttr["link"], out mimeType, out charSet, mSizeLimit);
+                        string responseUrl;
+                        CookieContainer cookies = null;
+                        byte[] bytes = WebUtils.GetWebResource(itemAttr["link"], /*refUrl=*/null, ref cookies, WebUtils.DefaultTimeout, out mimeType, out charSet, mSizeLimit, out responseUrl);
                         if (bytes == null) 
                         {
                             mLogger.Info("ProcessItem", "Item rejected because of its size.");
+                            mHistory.AddToHistory(guid, mSiteId);
                             return;                        
                         }
                         ContentType contentType = GetContentType(mimeType);
                         if ((contentType & mContentFilter) == 0) 
                         {
                             mLogger.Info("ProcessItem", "Item rejected because of its content type.");
+                            mHistory.AddToHistory(guid, mSiteId);
                             return;
                         }
-                        itemAttr.Add("_mimeType", mimeType);
-                        itemAttr.Add("_contentType", contentType.ToString());
+                        itemAttr.Add("responseUrl", responseUrl);
+                        itemAttr.Add("mimeType", mimeType);
+                        itemAttr.Add("contentType", contentType.ToString());
                         if (charSet == null) { charSet = "ISO-8859-1"; }
-                        itemAttr.Add("_charSet", charSet);
-                        itemAttr.Add("_contentLength", bytes.Length.ToString());
+                        itemAttr.Add("charSet", charSet);
+                        itemAttr.Add("contentLength", bytes.Length.ToString());
                         if (contentType == ContentType.Binary)
                         {
                             // save as base64-encoded binary data
@@ -248,20 +258,19 @@ namespace Latino.Workflows.TextMining
                             content = itemAttr["title"];
                         }
                     }
-                    if (itemAttr.ContainsKey("comments"))
-                    {
-                        // TODO: handle comments 
-                    }
-                    itemAttr.Add("_guid", guid.ToString());
-                    itemAttr.Add("_time", time.ToString(Utils.DATE_TIME_SIMPLE));
+                    itemAttr.Add("guid", guid.ToString());
+                    itemAttr.Add("time", time.ToString(Utils.DATE_TIME_SIMPLE));
                     Document document = new Document(name, content);
-                    //Console.WriteLine("Item attributes:");
                     foreach (KeyValuePair<string, string> attr in itemAttr)
                     {
-                        //Console.WriteLine("{0} = \"{1}\"", attr.Key, attr.Value);
                         document.Features.SetFeatureValue(attr.Key, attr.Value);
                     }
-                    corpus.AddDocument(document);
+                    if (mMaxDocsPerCorpus > 0 && corpora.Last.Documents.Count == mMaxDocsPerCorpus)
+                    {
+                        corpora.Add(new DocumentCorpus());
+                    }
+                    corpora.Last.AddDocument(document);
+                    mHistory.AddToHistory(guid, mSiteId);
                 }
             }
             catch (Exception e)
@@ -279,10 +288,8 @@ namespace Latino.Workflows.TextMining
 
         protected override object ProduceData()
         {
-            //Guid _guid;
             for (int i = 0; i < mSources.Count; i++)
             {
-                //_guid = Guid.NewGuid();
                 string url = mSources[i];
                 try
                 {                    
@@ -294,9 +301,6 @@ namespace Latino.Workflows.TextMining
                         mLogger.Info("ProduceData", "Getting RSS XML from {0} ...", url);
                         xml = WebUtils.GetWebPageDetectEncoding(url);
                         xml = FixXml(xml);
-                    //    StreamWriter w = new StreamWriter(string.Format(@"c:\work\dacqpipe\data\rss\{0}.xml", _guid.ToString("N")));
-                    //    w.Write(xml);
-                    //    w.Close();
                     }
                     catch (Exception e)
                     {
@@ -304,7 +308,7 @@ namespace Latino.Workflows.TextMining
                         return null;
                     }
                     Dictionary<string, string> channelAttr = new Dictionary<string, string>();
-                    DocumentCorpus corpus = new DocumentCorpus();
+                    ArrayList<DocumentCorpus> corpora = new ArrayList<DocumentCorpus>(new DocumentCorpus[] { new DocumentCorpus() });
                     XmlTextReader reader = new XmlTextReader(new StringReader(xml));
                     // first pass: items
                     mLogger.Info("ProduceData", "Reading items ...");
@@ -345,15 +349,15 @@ namespace Latino.Workflows.TextMining
                             // stopped?
                             if (mStopped)
                             {
-                                if (corpus.Documents.Count == 0) { return null; }
+                                if (corpora[0].Documents.Count == 0) { return null; }
                                 break;
                             }
-                            ProcessItem(itemAttr, corpus, url);
+                            ProcessItem(itemAttr, corpora, url); 
                         }
                     }
                     reader.Close();
                     reader = new XmlTextReader(new StringReader(xml));
-                    if (corpus.Documents.Count > 0)
+                    if (corpora[0].Documents.Count > 0)
                     {
                         // second pass: channel attributes
                         mLogger.Info("ProduceData", "Reading channel attributes ...");
@@ -392,21 +396,27 @@ namespace Latino.Workflows.TextMining
                         }
                         reader.Close();
                         channelAttr.Add("siteId", mSiteId);
-                        channelAttr.Add("_provider", GetType().ToString());
-                        channelAttr.Add("_sourceUrl", url);
-                        if (mIncludeRssXml) { channelAttr.Add("_source", xml); }
-                        channelAttr.Add("_timeBetweenPolls", TimeBetweenPolls.ToString());
-                        channelAttr.Add("_timeStart", timeStart.ToString(Utils.DATE_TIME_SIMPLE));
-                        channelAttr.Add("_timeEnd", DateTime.Now.ToString(Utils.DATE_TIME_SIMPLE));
-                        //Console.WriteLine("Channel attributes:");
-                        foreach (KeyValuePair<string, string> attr in channelAttr)
+                        channelAttr.Add("provider", GetType().ToString());
+                        channelAttr.Add("sourceUrl", url);
+                        if (mIncludeRssXml) { channelAttr.Add("source", xml); }
+                        channelAttr.Add("timeBetweenPolls", TimeBetweenPolls.ToString());
+                        channelAttr.Add("timeStart", timeStart.ToString(Utils.DATE_TIME_SIMPLE));
+                        channelAttr.Add("timeEnd", DateTime.Now.ToString(Utils.DATE_TIME_SIMPLE));
+                        int newItems = 0;
+                        foreach (DocumentCorpus corpus in corpora)
                         {
-                            //Console.WriteLine("{0} = \"{1}\"", attr.Key, attr.Value);
-                            corpus.Features.SetFeatureValue(attr.Key, attr.Value);
-                        }
-                        mLogger.Info("ProduceData", "{0} new items.", corpus.Documents.Count);
+                            newItems += corpus.Documents.Count;
+                            foreach (KeyValuePair<string, string> attr in channelAttr)
+                            {
+                                corpus.Features.SetFeatureValue(attr.Key, attr.Value);
+                            }
+                        }                        
+                        mLogger.Info("ProduceData", "{0} new items.", newItems);
                         // dispatch data
-                        DispatchData(corpus);
+                        foreach (DocumentCorpus corpus in corpora)
+                        {
+                            DispatchData(corpus);
+                        }
                     }
                     else
                     {
@@ -417,8 +427,6 @@ namespace Latino.Workflows.TextMining
                 }
                 catch (Exception e)
                 {
-                    //mLogger.Info("ProduceData", url + " " + _guid.ToString("N")); 
-                    mLogger.Info("ProduceData", url); // *** delete this
                     mLogger.Error("ProduceData", e);
                 }
             }
@@ -433,87 +441,48 @@ namespace Latino.Workflows.TextMining
         */
         private class RssHistory 
         {
-            private Pair<Dictionary<Guid, ArrayList<string>>, Queue<Guid>> mHistory
-                = new Pair<Dictionary<Guid, ArrayList<string>>, Queue<Guid>>(new Dictionary<Guid, ArrayList<string>>(), new Queue<Guid>());
+            private Pair<Set<Guid>, Queue<Guid>> mHistory
+                = new Pair<Set<Guid>, Queue<Guid>>(new Set<Guid>(), new Queue<Guid>());
             private int mHistorySize
-                = 30000; // TODO: make this adjustable
+                = 30000; // TODO: make this configurable
 
-            private bool AddToHistory(Guid id, string source)
+            public void AddToHistory(Guid id, string siteId)
             {
-                if (mHistorySize == 0) { return true; }
-                if (!mHistory.First.ContainsKey(id))
+                if (mHistorySize == 0) { return; }
+                if (mHistory.First.Count + 1 > mHistorySize)
                 {
-                    if (mHistory.First.Count + 1 > mHistorySize)
-                    {
-                        mHistory.First.Remove(mHistory.Second.Dequeue());
-                    }
-                    mHistory.First.Add(id, new ArrayList<string>(new string[] { source }));
-                    mHistory.Second.Enqueue(id);
-                    return true;
+                    mHistory.First.Remove(mHistory.Second.Dequeue());
                 }
-                else
-                {
-                    ArrayList<string> links = mHistory.First[id];
-                    if (!links.Contains(source)) 
-                    { 
-                        links.Add(source);
-                        return true;
-                    }
-                }
-                return false;
+                mHistory.First.Add(id);
+                mHistory.Second.Enqueue(id);
             }
 
-            public bool CheckHistory(Guid id, string source, string siteId, DatabaseConnection historyDatabase)
+            public bool CheckHistory(Guid id)
             {
-                bool retVal = mHistory.First.ContainsKey(id);
-                bool historyChanged = AddToHistory(id, source);                
-                if (historyChanged && historyDatabase != null) // write through
-                {
-                    string timeStr = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss.fff");
-                    if (siteId != null)
-                    {
-                        historyDatabase.ExecuteNonQuery("insert into History (SiteId, ItemId, Source, Time) values (?, ?, ?, ?)", 
-                            Utils.Truncate(siteId, 400), id.ToString("N"), Utils.Truncate(source, 900), timeStr);
-                    }
-                    else
-                    {
-                        historyDatabase.ExecuteNonQuery("insert into History (ItemId, Source, Time) values (?, ?, ?)",
-                            id.ToString("N"), Utils.Truncate(source, 900), timeStr);
-                    }
-                }
-                return retVal;
+                return mHistory.First.Contains(id);
             }
 
-            public void Load(string siteId, DatabaseConnection historyDatabase)
+            public void Load(string siteId, DatabaseConnection dbConnection)
             {
                 if (mHistorySize > 0)
                 {
-                    DataTable t;
+                    DataTable table;
                     if (siteId == null)
                     {
-                        t = historyDatabase.ExecuteQuery(string.Format("select top {0} * from History where SiteId is null order by Time desc", mHistorySize));
+                        table = dbConnection.ExecuteQuery(string.Format("select top {0} c.siteId, d.id, d.time from Documents d, Corpora c where d.corpusId = c.id and c.SiteId is null order by time desc", mHistorySize));
                     }
                     else
                     {
-                        t = historyDatabase.ExecuteQuery(string.Format("select top {0} * from History where SiteId=? order by Time desc", mHistorySize), 
-                            Utils.Truncate(siteId, 400));
+                        table = dbConnection.ExecuteQuery(string.Format("select top {0} c.siteId, d.id, d.time from Documents d, Corpora c where d.corpusId = c.id and c.SiteId = ? order by time desc", mHistorySize), Utils.Truncate(siteId, 400));
                     }
                     mHistory.First.Clear();
                     mHistory.Second.Clear();
-                    for (int i = t.Rows.Count - 1; i >= 0; i--)
+                    for (int i = table.Rows.Count - 1; i >= 0; i--)
                     {
-                        DataRow row = t.Rows[i];
-                        Guid itemId = new Guid((string)row["ItemId"]);
-                        string source = (string)row["Source"];
-                        if (!mHistory.First.ContainsKey(itemId))
-                        {
-                            mHistory.First.Add(itemId, new ArrayList<string>(new string[] { source }));
-                            mHistory.Second.Enqueue(itemId);
-                        }
-                        else
-                        {
-                            mHistory.First[itemId].Add(source);
-                        }
+                        DataRow row = table.Rows[i];
+                        Guid itemId = new Guid((string)row["id"]);
+                        mHistory.First.Add(itemId);
+                        mHistory.Second.Enqueue(itemId);
                     }
                 }
             }

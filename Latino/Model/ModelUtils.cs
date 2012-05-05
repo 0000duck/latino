@@ -1,12 +1,14 @@
 ﻿/*==========================================================================;
  *
- *  This file is part of LATINO. See http://latino.sf.net
+ *  This file is part of LATINO. See http://www.latinolib.org
  *
  *  File:    ModelUtils.cs
  *  Desc:    Fundamental ML-related utilities
  *  Created: Aug-2008
  *
- *  Authors: Miha Grcar
+ *  Author:  Miha Grcar
+ *
+ *  License: GNU LGPL (http://www.gnu.org/licenses/lgpl.txt)
  *
  ***************************************************************************/
 
@@ -70,10 +72,19 @@ namespace Latino.Model
             {
                 tmp = ((SparseVector<double>.ReadOnly)inVec).GetWritableCopy();
             }
-            else if (inVec.GetType() == typeof(BinaryVector<int>) || inVec.GetType() == typeof(BinaryVector<int>.ReadOnly))
+            else if (inVec.GetType() == typeof(BinaryVector)) 
             {
-                tmp = new SparseVector<double>(((BinaryVector<int>.ReadOnly)inVec).Count);
-                foreach (int item in (BinaryVector<int>.ReadOnly)inVec)
+                tmp = new SparseVector<double>(((BinaryVector)inVec).Count);
+                foreach (int item in (BinaryVector)inVec)
+                {
+                    tmp.InnerIdx.Add(item);
+                    tmp.InnerDat.Add(1);
+                }
+            }
+            else if (inVec.GetType() == typeof(BinaryVector.ReadOnly))
+            {
+                tmp = new SparseVector<double>(((BinaryVector.ReadOnly)inVec).Count);
+                foreach (int item in (BinaryVector.ReadOnly)inVec)
                 {
                     tmp.InnerIdx.Add(item);
                     tmp.InnerDat.Add(1);
@@ -92,16 +103,16 @@ namespace Latino.Model
             {
                 outVec = new SparseVector<double>.ReadOnly(tmp);
             }
-            else if (outVecType == typeof(BinaryVector<int>))
+            else if (outVecType == typeof(BinaryVector))
             {
-                outVec = new BinaryVector<int>();
-                ((BinaryVector<int>)outVec).Inner.AddRange(tmp.InnerIdx);
+                outVec = new BinaryVector();
+                ((BinaryVector)outVec).Inner.AddRange(tmp.InnerIdx);
             }
-            else if (outVecType == typeof(BinaryVector<int>.ReadOnly))
+            else if (outVecType == typeof(BinaryVector.ReadOnly))
             {
-                BinaryVector<int> vec = new BinaryVector<int>();
+                BinaryVector vec = new BinaryVector();
                 vec.Inner.AddRange(tmp.InnerIdx);
-                outVec = new BinaryVector<int>.ReadOnly(vec);
+                outVec = new BinaryVector.ReadOnly(vec);
             }
             else
             {
@@ -184,7 +195,7 @@ namespace Latino.Model
             Utils.ThrowException(vecList == null ? new ArgumentNullException("vecList") : null);
             Dictionary<int, double> tmp = new Dictionary<int, double>();
             int vecCount = 0;
-            foreach (SparseVector<double>.ReadOnly vec in vecList)
+            foreach (SparseVector<double> vec in vecList)
             {
                 foreach (IdxDat<double> item in vec)
                 {
@@ -244,7 +255,7 @@ namespace Latino.Model
             foreach (int vecIdx in vecIdxList)
             {
                 Utils.ThrowException((vecIdx < 0 || vecIdx >= dataset.Count) ? new ArgumentValueException("vecIdxList") : null);
-                SparseVector<double>.ReadOnly vec = dataset[vecIdx];
+                SparseVector<double> vec = dataset[vecIdx];
                 foreach (IdxDat<double> item in vec)
                 {
                     if (tmp.ContainsKey(item.Idx))
@@ -295,13 +306,14 @@ namespace Latino.Model
             return centroid;
         }
 
-        public static SparseVector<double> ComputeCentroidWgt(IEnumerable<Pair<double, SparseVector<double>.ReadOnly>> wgtVecList, CentroidType type)
+        public static SparseVector<double> ComputeCentroidWgt(IEnumerable<Pair<double, SparseVector<double>>> wgtVecList, CentroidType type)
         {
             Utils.ThrowException(wgtVecList == null ? new ArgumentNullException("wgtVecList") : null);
             Dictionary<int, double> tmp = new Dictionary<int, double>();
             double wgtSum = 0;
-            foreach (Pair<double, SparseVector<double>.ReadOnly> wgtVec in wgtVecList)
+            foreach (Pair<double, SparseVector<double>> wgtVec in wgtVecList)
             {
+                Utils.ThrowException(wgtVec.First < 0 || wgtVec.Second == null ? new ArgumentValueException("wgtVecList") : null);
                 foreach (IdxDat<double> item in wgtVec.Second)
                 {
                     if (tmp.ContainsKey(item.Idx))
@@ -312,10 +324,10 @@ namespace Latino.Model
                     {
                         tmp.Add(item.Idx, wgtVec.First * item.Dat);
                     }
-                }
+                }                
                 wgtSum += wgtVec.First;
             }
-            Utils.ThrowException(wgtSum == 0 ? new ArgumentValueException("wgtVecList") : null);
+            if (wgtSum == 0) { return new SparseVector<double>(); }
             SparseVector<double> centroid = new SparseVector<double>();
             switch (type)
             {
@@ -470,7 +482,7 @@ namespace Latino.Model
             double[] simVec = new double[dataset.Count];
             SparseMatrix<double> simMtx = new SparseMatrix<double>();
             int rowIdx = 0;
-            foreach (SparseVector<double>.ReadOnly item in dataset)
+            foreach (SparseVector<double> item in dataset)
             {
                 GetDotProductSimilarity(item, simVec, trMtx, /*startIdx=*/fullMatrix ? 0 : rowIdx);
                 for (int idx = 0; idx < simVec.Length; idx++)

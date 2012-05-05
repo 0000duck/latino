@@ -6,7 +6,7 @@
  *  Desc:    English tokenizer component
  *  Created: Jul-2011
  *
- *  Authors: Miha Grcar
+ *  Author:  Miha Grcar
  *
  ***************************************************************************/
 
@@ -29,12 +29,13 @@ namespace Latino.Workflows.TextMining
 
         public EnglishTokenizerComponent() : base(typeof(EnglishTokenizerComponent))
         {
+            mTokenizer.AlphaNumericOptimization = true;
             mBlockSelector = "Sentence";
         }
 
-        protected override void ProcessDocument(Document document)
+        public/*protected*/ override void ProcessDocument(Document document)
         {
-            string contentType = document.Features.GetFeatureValue("_contentType");
+            string contentType = document.Features.GetFeatureValue("contentType");
             if (contentType != "Text") { return; }
             try
             {

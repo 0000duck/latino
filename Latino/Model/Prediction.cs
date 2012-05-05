@@ -1,12 +1,14 @@
 ﻿/*==========================================================================;
  *
- *  This file is part of LATINO. See http://latino.sf.net
+ *  This file is part of LATINO. See http://www.latinolib.org
  *
  *  File:    Prediction.cs
  *  Desc:    Prediction (output of ML models)
  *  Created: Aug-2007
  *
- *  Authors: Miha Grcar
+ *  Author:  Miha Grcar
+ *
+ *  License: GNU LGPL (http://www.gnu.org/licenses/lgpl.txt)
  *
  ***************************************************************************/
 
@@ -51,12 +53,7 @@ namespace Latino.Model
             mClassScores.Sort(DescSort<KeyDat<double, LblT>>.Instance);
         }
 
-#if PUBLIC_INNER
-        public
-#else
-        internal 
-#endif    
-        ArrayList<KeyDat<double, LblT>> Inner
+        public ArrayList<KeyDat<double, LblT>> Inner
         {
             get { return mClassScores; }
         }

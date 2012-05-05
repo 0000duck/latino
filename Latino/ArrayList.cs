@@ -1,12 +1,14 @@
 ﻿/*==========================================================================;
  *
- *  This file is part of LATINO. See http://latino.sf.net
+ *  This file is part of LATINO. See http://www.latinolib.org
  *
  *  File:    ArrayList.cs
  *  Desc:    Dynamic array data structure 
  *  Created: Nov-2007
  *
- *  Authors: Miha Grcar
+ *  Author:  Miha Grcar
+ *
+ *  License: GNU LGPL (http://www.gnu.org/licenses/lgpl.txt)
  *
  ***************************************************************************/
 
@@ -135,7 +137,7 @@ namespace Latino
             foreach (T item in this)
             {
                 str.Append(" ");
-                str.Append(item.ToString());
+                str.Append(item);
             }
             str.Append(" )");
             return str.ToString();
@@ -348,6 +350,11 @@ namespace Latino
             public ArrayList<T> Inner
             {
                 get { return mList; }
+            }
+
+            object IReadOnlyAdapter.Inner
+            {
+                get { return Inner; }
             }
 
             // *** Partial IList<T> interface implementation ***

@@ -6,7 +6,7 @@
  *  Desc:    Stream data producer base class
  *  Created: Dec-2010
  *
- *  Authors: Miha Grcar
+ *  Author:  Miha Grcar
  *
  ***************************************************************************/
 
@@ -70,33 +70,7 @@ namespace Latino.Workflows
 
         protected void DispatchData(object data)
         {
-            Utils.ThrowException(data == null ? new ArgumentNullException("data") : null);
-            if (mDispatchPolicy == DispatchPolicy.Random)
-            {
-                mLogger.Trace("DispatchData", "Dispatching data of type {0} (random policy) ...", data.GetType());
-                ArrayList<IDataConsumer> tmp = new ArrayList<IDataConsumer>(mDataConsumers.Count);
-                foreach (IDataConsumer dataConsumer in mDataConsumers) { tmp.Add(dataConsumer); }
-                tmp[mRandom.Next(0, tmp.Count)].ReceiveData(this, data);               
-            }
-            else
-            {
-                mLogger.Trace("DispatchData", "Dispatching data of type {0} (to-all policy) ...", data.GetType());
-                if (mDataConsumers.Count > 1 && mCloneDataOnFork)
-                {
-                    foreach (IDataConsumer dataConsumer in mDataConsumers)
-                    {
-                        dataConsumer.ReceiveData(this, Utils.Clone(data, /*deepClone=*/true));
-                    }
-                }
-                else
-                {
-                    foreach (IDataConsumer dataConsumer in mDataConsumers)
-                    {
-                        dataConsumer.ReceiveData(this, data);
-                    }
-                }
-            }
-            mLogger.Trace("DispatchData", "Data dispatched.");
+            WorkflowUtils.DispatchData(this, data, mCloneDataOnFork, mDispatchPolicy, mDataConsumers, mLogger);
         }
 
         // *** IDataProducer interface implementation ***
@@ -116,10 +90,7 @@ namespace Latino.Workflows
         public void Unsubscribe(IDataConsumer dataConsumer)
         {
             Utils.ThrowException(dataConsumer == null ? new ArgumentNullException("dataConsumer") : null);
-            if (mDataConsumers.Contains(dataConsumer))
-            {
-                mDataConsumers.Remove(dataConsumer);
-            }
+            mDataConsumers.Remove(dataConsumer);
         }
 
         // *** IDisposable interface implementation ***

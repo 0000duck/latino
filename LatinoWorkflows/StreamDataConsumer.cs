@@ -6,13 +6,14 @@
  *  Desc:    Stream data consumer base class
  *  Created: Dec-2010
  *
- *  Authors: Miha Grcar
+ *  Author:  Miha Grcar
  *
  ***************************************************************************/
 
 using System;
 using System.Collections.Generic;
 using System.Threading;
+using Latino.Workflows.TextMining;
 
 namespace Latino.Workflows
 {
@@ -24,21 +25,33 @@ namespace Latino.Workflows
     */
     public abstract class StreamDataConsumer : IDataConsumer
     {
+        private string mName
+            = null;
+
+        private string mLoggerBaseName;
+        protected Logger mLogger;
+
         private Queue<Pair<IDataProducer, object>> mQueue
             = new Queue<Pair<IDataProducer, object>>();
+
+        private Ref<int> mLoad
+            = 0;
+        private int mMaxLoad
+            = 0;
+        private Ref<TimeSpan> mProcessingTime
+            = TimeSpan.Zero;
+        private DateTime mStartTime
+            = DateTime.MinValue;
+        private Ref<int> mNumItemsProcessed
+            = 0;
+        private Ref<int> mNumDocumentsProcessed
+            = 0;
+
         private bool mThreadAlive
             = false;
         private bool mStopped
             = false;
         private Thread mThread;
-        private int mMaxQueueSize
-            = 0;
-        private DateTime mMaxQueueSizeTime
-            = DateTime.MinValue;
-        private string mName
-            = null;
-        private string mLoggerBaseName;
-        protected Logger mLogger;
 
         public StreamDataConsumer(string loggerBaseName)
         { 
@@ -55,19 +68,54 @@ namespace Latino.Workflows
             get { return (mThread.ThreadState & ThreadState.Suspended) != 0; }
         }
 
-        public int QueueSize
+        public int Load
         {
-            get { return mQueue.Count; }
+            get { return mLoad.Val; }
         }
 
-        public int MaxQueueSize
+        public int GetMaxLoad()
         {
-            get { return mMaxQueueSize; }
+            lock (mLoad)
+            {
+                int maxLoad = mMaxLoad;
+                mMaxLoad = mLoad.Val;
+                return maxLoad;
+            }
         }
 
-        public DateTime MaxQueueSizeTime
+        public double GetProcessingTimeSec(DateTime currentTime)
         {
-            get { return mMaxQueueSizeTime; }
+            lock (mProcessingTime)
+            {
+                if (mStartTime != DateTime.MinValue)
+                {
+                    mProcessingTime.Val += currentTime - mStartTime;
+                    mStartTime = currentTime;
+                }
+                double timeSec = mProcessingTime.Val.TotalSeconds;
+                mProcessingTime.Val = TimeSpan.Zero;
+                return timeSec;
+            }
+        }
+
+        public int GetNumItemsProcessed()
+        {
+            lock (mNumItemsProcessed)
+            {
+                int val = mNumItemsProcessed.Val;
+                mNumItemsProcessed.Val = 0;
+                return val;
+            }
+        }
+
+        public int GetNumDocumentsProcessed()
+        {
+            lock (mNumDocumentsProcessed)
+            {
+                int val = mNumDocumentsProcessed.Val;
+                mNumDocumentsProcessed.Val = 0;
+                return val;
+            }
         }
 
         public string Name
@@ -96,7 +144,17 @@ namespace Latino.Workflows
                     // consume data
                     try
                     {
+                        mStartTime = DateTime.Now;
                         ConsumeData(data.First, data.Second);
+                        lock (mProcessingTime) { mProcessingTime.Val += DateTime.Now - mStartTime; mStartTime = DateTime.MinValue; }
+                        lock (mNumItemsProcessed) { mNumItemsProcessed.Val++; }
+                        if (data.Second is DocumentCorpus)
+                        {
+                            lock (mNumDocumentsProcessed)
+                            {
+                                mNumDocumentsProcessed.Val += ((DocumentCorpus)data.Second).Documents.Count;
+                            }
+                        }
                     }
                     catch (Exception exc)
                     {
@@ -105,6 +163,7 @@ namespace Latino.Workflows
                     // check if more data available
                     lock (mQueue)
                     {
+                        lock (mLoad) { mLoad.Val--; }
                         if (mStopped) { mLogger.Debug("Stop", "Stopped."); return; }
                         mThreadAlive = mQueue.Count > 0;
                         if (!mThreadAlive) { break; }
@@ -165,7 +224,11 @@ namespace Latino.Workflows
             lock (mQueue)
             {
                 mQueue.Enqueue(new Pair<IDataProducer, object>(sender, data));
-                if (mQueue.Count >= mMaxQueueSize) { mMaxQueueSize = mQueue.Count; mMaxQueueSizeTime = DateTime.Now; }
+                lock (mLoad) 
+                { 
+                    mLoad.Val++;
+                    if (mLoad.Val >= mMaxLoad) { mMaxLoad = mLoad.Val; }
+                }
                 if (!mThreadAlive && !mStopped)
                 {
                     mThreadAlive = true;

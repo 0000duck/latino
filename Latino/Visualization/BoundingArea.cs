@@ -1,12 +1,12 @@
 ﻿/*==========================================================================;
  *
- *  This file is part of LATINO. See http://latino.sf.net
+ *  This file is part of LATINO. See http://www.latinolib.org
  *
  *  File:    BoundingArea.cs
  *  Desc:    Bounding area as set of rectangles
  *  Created: Mar-2008
  *
- *  Authors: Miha Grcar
+ *  Author:  Miha Grcar
  *
  ***************************************************************************/
 
@@ -170,14 +170,15 @@ namespace Latino.Visualization
             {
                 return GetWritableCopy();
             }
-#if PUBLIC_INNER
-            public
-#else
-            internal
-#endif
-            BoundingArea Inner
+
+            public BoundingArea Inner
             {
                 get { return mBoundingArea; }
+            }
+
+            object IReadOnlyAdapter.Inner
+            {
+                get { return Inner; }
             }
         }
     }

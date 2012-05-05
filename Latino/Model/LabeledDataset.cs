@@ -1,12 +1,14 @@
 ﻿/*==========================================================================;
  *
- *  This file is part of LATINO. See http://latino.sf.net
+ *  This file is part of LATINO. See http://www.latinolib.org
  *
  *  File:    LabeledDataset.cs
- *  Desc:    Labeled dataset (for building ML models)
+ *  Desc:    Labeled dataset data structure
  *  Created: Aug-2007
  *
- *  Authors: Miha Grcar
+ *  Author:  Miha Grcar
+ *
+ *  License: GNU LGPL (http://www.gnu.org/licenses/lgpl.txt)
  *
  ***************************************************************************/
 
@@ -22,7 +24,7 @@ namespace Latino.Model
        |
        '-----------------------------------------------------------------------
     */
-    public class LabeledDataset<LblT, ExT> : ILabeledDataset<LblT, ExT>, IUnlabeledExampleCollection<ExT>
+    public class LabeledDataset<LblT, ExT> : ILabeledDataset<LblT, ExT>, IUnlabeledExampleCollection<ExT>/*, IUnlabeledDataset<ExT>*/
     {
         private ArrayList<LabeledExample<LblT, ExT>> mItems
             = new ArrayList<LabeledExample<LblT, ExT>>();
@@ -51,15 +53,15 @@ namespace Latino.Model
 
         public void Add(LblT label, ExT example)
         {
-            Utils.ThrowException(label == null ? new ArgumentNullException("label") : null); // *** allow unlabeled examples?
+            Utils.ThrowException(label == null ? new ArgumentNullException("label") : null); 
             Utils.ThrowException(example == null ? new ArgumentNullException("example") : null);
             mItems.Add(new LabeledExample<LblT, ExT>(label, example));
         }
 
-        public void Add(LabeledExample<LblT, ExT> example)
+        public void Add(LabeledExample<LblT, ExT> labeledExample)
         {
-            Utils.ThrowException(example == null ? new ArgumentNullException("example") : null); 
-            mItems.Add(example);
+            Utils.ThrowException(labeledExample == null ? new ArgumentNullException("labeledExample") : null); 
+            mItems.Add(labeledExample);
         }
 
         public void AddRange(IEnumerable<LabeledExample<LblT, ExT>> examples)
@@ -68,7 +70,7 @@ namespace Latino.Model
             foreach (LabeledExample<LblT, ExT> labeledExample in examples)
             {
                 Utils.ThrowException(labeledExample == null ? new ArgumentValueException("examples") : null);
-                mItems.Add(new LabeledExample<LblT, ExT>(labeledExample.Label, labeledExample.Example));
+                mItems.Add(labeledExample);
             }
         }
 
@@ -182,13 +184,13 @@ namespace Latino.Model
             {
                 newDataset = new LabeledDataset<LblT, SparseVector<double>.ReadOnly>(tmp);
             }
-            else if (newExType == typeof(BinaryVector<int>))
+            else if (newExType == typeof(BinaryVector))
             {
-                newDataset = new LabeledDataset<LblT, BinaryVector<int>>(tmp);
+                newDataset = new LabeledDataset<LblT, BinaryVector>(tmp);
             }
-            else if (newExType == typeof(BinaryVector<int>.ReadOnly))
+            else if (newExType == typeof(BinaryVector.ReadOnly))
             {
-                newDataset = new LabeledDataset<LblT, BinaryVector<int>.ReadOnly>(tmp);
+                newDataset = new LabeledDataset<LblT, BinaryVector.ReadOnly>(tmp);
             }
             else
             {

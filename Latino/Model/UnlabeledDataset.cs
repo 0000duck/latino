@@ -1,12 +1,14 @@
 ﻿/*==========================================================================;
  *
- *  This file is part of LATINO. See http://latino.sf.net
+ *  This file is part of LATINO. See http://www.latinolib.org
  *
  *  File:    UnlabeledDataset.cs
- *  Desc:    Unlabeled dataset (for clustering)
+ *  Desc:    Unlabeled dataset data structure
  *  Created: Nov-2009
  *
- *  Authors: Miha Grcar
+ *  Author:  Miha Grcar
+ *
+ *  License: GNU LGPL (http://www.gnu.org/licenses/lgpl.txt)
  *
  ***************************************************************************/
 
@@ -137,13 +139,13 @@ namespace Latino.Model
             {
                 newDataset = new UnlabeledDataset<SparseVector<double>.ReadOnly>(tmp);
             }
-            else if (newExType == typeof(BinaryVector<int>))
+            else if (newExType == typeof(BinaryVector))
             {
-                newDataset = new UnlabeledDataset<BinaryVector<int>>(tmp);
+                newDataset = new UnlabeledDataset<BinaryVector>(tmp);
             }
-            else if (newExType == typeof(BinaryVector<int>.ReadOnly))
+            else if (newExType == typeof(BinaryVector.ReadOnly))
             {
-                newDataset = new UnlabeledDataset<BinaryVector<int>.ReadOnly>(tmp);
+                newDataset = new UnlabeledDataset<BinaryVector.ReadOnly>(tmp);
             }
             else
             {

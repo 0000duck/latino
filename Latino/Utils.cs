@@ -1,12 +1,14 @@
 ﻿/*==========================================================================;
  *
- *  This file is part of LATINO. See http://latino.sf.net
+ *  This file is part of LATINO. See http://www.latinolib.org
  *
  *  File:    Utils.cs
  *  Desc:    Fundamental LATINO utilities
  *  Created: Nov-2007
  *
- *  Authors: Miha Grcar
+ *  Author:  Miha Grcar
+ *
+ *  License: GNU LGPL (http://www.gnu.org/licenses/lgpl.txt)
  *
  ***************************************************************************/
 
@@ -19,6 +21,7 @@ using System.Xml;
 using System.Web;
 using System.Text.RegularExpressions;
 using System.Text;
+using System.Configuration;
 
 namespace Latino
 {
@@ -30,6 +33,22 @@ namespace Latino
     */
     public static class Utils
     {
+        /* .-----------------------------------------------------------------------
+           |
+           |  Enum CaseType
+           |
+           '-----------------------------------------------------------------------
+        */
+        public enum CaseType
+        { 
+            abc,
+            ABC,
+            Abc,
+            AbC,
+            aBc,
+            Other
+        }
+
         public const string DATE_TIME_SIMPLE
             = "yyyy-MM-dd HH:mm:ss K"; // simple date-time format (incl. time zone, if available)
         #region mTimeZones
@@ -208,7 +227,7 @@ namespace Latino
                 ((ISerializable)obj).Save(memSer); // throws serialization-related exceptions   
                 byte[] buffer = ((MemoryStream)memSer.Stream).GetBuffer();
                 MD5CryptoServiceProvider hashAlgo = new MD5CryptoServiceProvider();
-                Guid md5Hash = new Guid(hashAlgo.ComputeHash(buffer));
+                Guid md5Hash = new Guid(hashAlgo.ComputeHash(buffer, 0, (int)memSer.Stream.Position));
                 return md5Hash.GetHashCode();
             }
             else
@@ -227,6 +246,80 @@ namespace Latino
             else
             {
                 return Convert.ChangeType(obj, newType, fmtProvider); // throws InvalidCastException, FormatException, OverflowException
+            }
+        }
+
+        // *** String utilities ***
+
+        public static Guid GetStringHashCode128(string str)
+        {
+            ThrowException(str == null ? new ArgumentNullException("str") : null);
+            MD5CryptoServiceProvider md5 = new MD5CryptoServiceProvider();
+            return new Guid(md5.ComputeHash(Encoding.UTF8.GetBytes(str)));
+        }
+
+        public static ulong GetStringHashCode64(string str)
+        {
+            ThrowException(str == null ? new ArgumentNullException("str") : null);
+            byte[] hashCode128 = new MD5CryptoServiceProvider().ComputeHash(Encoding.UTF8.GetBytes(str));
+            ulong part1 = (ulong)BitConverter.ToInt64(hashCode128, 0);
+            ulong part2 = (ulong)BitConverter.ToInt64(hashCode128, 8);
+            return part1 ^ part2;
+        }
+
+        public static string Truncate(string str, int len)
+        {
+            ThrowException(len < 0 ? new ArgumentOutOfRangeException("len") : null);
+            return (str != null && str.Length > len) ? str.Substring(0, len) : str;
+        }
+
+        public static string ToOneLine(string str)
+        {
+            return ToOneLine(str, /*compact=*/false);
+        }
+
+        public static string ToOneLine(string str, bool compact)
+        {
+            if (str == null) { return null; }
+            str = str.Replace("\r", "").Replace('\n', ' ').Trim();
+            if (compact)
+            {
+                str = Regex.Replace(str, @"\s\s+", " ");
+            }
+            return str;
+        }
+
+        public static CaseType GetCaseType(string str) 
+        {
+            ThrowException(str == null ? new ArgumentNullException("str") : null);
+            str = str.Trim();
+            int numUpper = 0;
+            int numLower = 0;
+            int numOther = 0;
+            foreach (char ch in str)
+            {
+                if (char.IsUpper(ch)) { numUpper++; }
+                else if (char.IsLower(ch)) { numLower++; }
+                else { numOther++; }
+            }
+            int numLetter = numUpper + numLower;
+            if (numLetter == 0) { return CaseType.Other; }
+            if (numLetter == 1)
+            {
+                if (char.IsUpper(str[0])) { return CaseType.ABC; }
+                else if (char.IsLower(str[0])) { return CaseType.abc; }
+                else { return CaseType.Other; }
+            }
+            if (char.IsUpper(str[0])) // ABC, Abc, AbC
+            {
+                if (numUpper + numOther == str.Length) { return CaseType.ABC; }
+                else if (numUpper == 1) { return CaseType.Abc; }
+                else { return CaseType.AbC; }
+            }
+            else // abc, aBc
+            {
+                if (numLower + numOther == str.Length) { return CaseType.abc; }
+                else { return CaseType.aBc; }
             }
         }
 
@@ -343,6 +436,14 @@ namespace Latino
             return null;
         }
 
+        public static string GetConfigValue(string key, string defaultValue)
+        {
+            ThrowException(key == null ? new ArgumentNullException("key") : null);
+            string value = ConfigurationManager.AppSettings[key]; // throws ConfigurationErrorsException 
+            if (value == null) { value = defaultValue; }
+            return value;
+        }
+
         // *** Dictionary utilities ***
 
         public static void SaveDictionary<KeyT, ValT>(Dictionary<KeyT, ValT> dict, BinarySerializer writer)
@@ -380,16 +481,22 @@ namespace Latino
 
         // *** SparseVector utilities ***
 
-        public static double GetVecLenL2(SparseVector<double>.ReadOnly vec)
+        public static double GetVecLenL2(SparseVector<double> vec)
         {
             ThrowException(vec == null ? new ArgumentNullException("vec") : null);
             double len = 0;
-            ArrayList<double> datInner = vec.Inner.InnerDat;
+            ArrayList<double> datInner = vec.InnerDat;
             foreach (double val in datInner)
             {
                 len += val * val;
             }
             return Math.Sqrt(len);
+        }
+
+        public static double GetVecLenL2(SparseVector<double>.ReadOnly vec)
+        {
+            ThrowException(vec == null ? new ArgumentNullException("vec") : null);
+            return GetVecLenL2(vec.Inner);
         }
 
         public static void NrmVecL2(SparseVector<double> vec)
@@ -426,14 +533,9 @@ namespace Latino
             if (reader.IsEmptyElement) { return ""; }
             string text = "";
             while (reader.Read() && reader.NodeType != XmlNodeType.Text && reader.NodeType != XmlNodeType.CDATA && !(reader.NodeType == XmlNodeType.EndElement && reader.Name == attrName)) { }
-            if (reader.NodeType == XmlNodeType.Text)
+            if (reader.NodeType == XmlNodeType.Text || reader.NodeType == XmlNodeType.CDATA)
             {
-                text = HttpUtility.HtmlDecode(reader.Value);
-                XmlSkip(reader, attrName);
-            }
-            else if (reader.NodeType == XmlNodeType.CDATA)
-            {
-                text = reader.Value; // no decoding for CDATA
+                text = reader.Value;
                 XmlSkip(reader, attrName);
             }
             return text;
@@ -477,28 +579,6 @@ namespace Latino
                 return null;
             }
             return dt.ToString(DATE_TIME_SIMPLE);
-        }
-
-        public static string Truncate(string str, int len)
-        {
-            ThrowException(len < 0 ? new ArgumentOutOfRangeException("len") : null);
-            return (str != null && str.Length > len) ? str.Substring(0, len) : str;
-        }
-
-        public static string ToOneLine(string str)
-        {
-            return ToOneLine(str, /*compact=*/false);
-        }
-
-        public static string ToOneLine(string str, bool compact)
-        {
-            if (str == null) { return null; }
-            str = str.Replace("\r", "").Replace('\n', ' ').Trim();
-            if (compact)
-            {
-                str = Regex.Replace(str, @"\s\s+", " ");
-            }
-            return str;
         }
 
         // *** Delegates ***

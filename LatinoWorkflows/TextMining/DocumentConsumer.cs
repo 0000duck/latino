@@ -6,7 +6,7 @@
  *  Desc:    Document consumer base class
  *  Created: Dec-2010
  *
- *  Authors: Miha Grcar
+ *  Author:  Miha Grcar
  *
  ***************************************************************************/
 
@@ -23,6 +23,10 @@ namespace Latino.Workflows.TextMining
     public abstract class DocumentConsumer : StreamDataConsumer
     {
         public DocumentConsumer(string loggerName) : base(loggerName)
+        { 
+        }
+
+        public DocumentConsumer(Type loggerType) : this(loggerType.ToString())
         { 
         }
 

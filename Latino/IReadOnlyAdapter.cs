@@ -1,12 +1,14 @@
 ﻿/*==========================================================================;
  *
- *  This file is part of LATINO. See http://latino.sf.net
+ *  This file is part of LATINO. See http://www.latinolib.org
  *
  *  File:    IReadOnlyAdapter.cs
- *  Desc:    Read-only adapter interface
+ *  Desc:    Interface definition
  *  Created: Nov-2007
  *
- *  Authors: Miha Grcar
+ *  Author:  Miha Grcar
+ *
+ *  License: GNU LGPL (http://www.gnu.org/licenses/lgpl.txt)
  *
  ***************************************************************************/
 
@@ -21,6 +23,7 @@ namespace Latino
     public interface IReadOnlyAdapter
     {
         object GetWritableCopy();
+        object Inner { get; }
     }
 
     /* .-----------------------------------------------------------------------
@@ -32,5 +35,6 @@ namespace Latino
     public interface IReadOnlyAdapter<T> : IReadOnlyAdapter
     {
         new T GetWritableCopy();
+        new T Inner { get; }
     } 
 }

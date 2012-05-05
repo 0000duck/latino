@@ -6,7 +6,7 @@
  *  Desc:    Generic (customizable) stream data producer (polling)
  *  Created: Dec-2010
  *
- *  Authors: Miha Grcar
+ *  Author:  Miha Grcar
  *
  ***************************************************************************/
 
@@ -27,7 +27,7 @@ namespace Latino.Workflows
         public event ProduceDataHandler OnProduceData
             = null;
 
-        public GenericStreamDataProducerPoll() : base(typeof(GenericStreamDataProducerPoll).ToString())
+        public GenericStreamDataProducerPoll() : base(typeof(GenericStreamDataProducerPoll))
         {
         }
 

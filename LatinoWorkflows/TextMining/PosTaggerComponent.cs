@@ -6,7 +6,7 @@
  *  Desc:    English part-of-speech tagger component
  *  Created: Jul-2011
  *
- *  Authors: Miha Grcar
+ *  Author:  Miha Grcar
  *
  ***************************************************************************/
 
@@ -24,7 +24,7 @@ namespace Latino.Workflows.TextMining
     public class EnglishPosTaggerComponent : DocumentProcessor
     {
         private EnglishMaximumEntropyPosTagger mPosTagger
-            = new EnglishMaximumEntropyPosTagger(Utils.GetManifestResourceStream(typeof(EnglishTokenizerComponent), "EnglishPOS.nbin"));
+            = new EnglishMaximumEntropyPosTagger(Utils.GetManifestResourceStream(typeof(EnglishTokenizerComponent), "EnglishPOS.nbin"), /*beamSize=*/3);
 
         private string mTokenGroupSelector 
             = "Sentence";
@@ -51,13 +51,13 @@ namespace Latino.Workflows.TextMining
             int i = 0;
             foreach (TextBlock textBlock in textBlocks)
             {
-                textBlock.Features.SetFeatureValue("posTag", posTags[i++]);
+                textBlock.Annotation.Features.SetFeatureValue("posTag", posTags[i++]);
             }
         }
 
-        protected override void ProcessDocument(Document document)
+        public/*protected*/ override void ProcessDocument(Document document)
         {
-            string contentType = document.Features.GetFeatureValue("_contentType");
+            string contentType = document.Features.GetFeatureValue("contentType");
             if (contentType != "Text") { return; }
             try
             {
@@ -68,6 +68,7 @@ namespace Latino.Workflows.TextMining
                 }
                 else
                 {
+                    document.CreateAnnotationIndex();
                     TextBlock[] tokenGroups = document.GetAnnotatedBlocks(mTokenGroupSelector);
                     foreach (TextBlock tokenGroup in tokenGroups)
                     {

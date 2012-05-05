@@ -40,6 +40,9 @@ namespace Latino.Workflows.TextMining
         private Dictionary<string, string> mFeatures
             = new Dictionary<string, string>();
         private Features mFeaturesInterface;
+        
+        private ArrayList<KeyDat<int, Annotation>> mAnnotationIndex
+            = null;
 
         public Document(string name, string text)
         {
@@ -92,9 +95,23 @@ namespace Latino.Workflows.TextMining
             mAnnotations.Add(annotation); 
         }
 
+        public void AddAnnotations(IEnumerable<Annotation> annotationList)
+        {
+            Utils.ThrowException(annotationList == null ? new ArgumentNullException("annotationList") : null);
+            foreach (Annotation annotation in annotationList)
+            {
+                AddAnnotation(annotation); // throws ArgumentNullException, ArgumentValueException
+            }
+        }
+
         public void RemoveAnnotationAt(int idx)
         {
             mAnnotations.RemoveAt(idx); // throws ArgumentOutOfRangeException
+        }
+
+        public void ClearAnnotations()
+        {
+            mAnnotations.Clear();
         }
 
         public Annotation GetAnnotationAt(int idx)
@@ -116,27 +133,31 @@ namespace Latino.Workflows.TextMining
             return blocks.ToArray();
         }
 
-        public TextBlock[] GetAnnotatedBlocks(string selector, int spanStart, int spanEnd)
+        public void CreateAnnotationIndex()
         {
-            Utils.ThrowException(selector == null ? new ArgumentNullException("selector") : null);
-            Annotation key = new Annotation(spanStart, spanEnd, "dummy"); // throws ArgumentOutOfRangeException
-            ArrayList<TextBlock> blocks = new ArrayList<TextBlock>();
-            // sort annotations by SpanStart if not sorted
-            int currentSpanStart = -1;
+            mAnnotationIndex = new ArrayList<KeyDat<int, Annotation>>(mAnnotations.Count);
             foreach (Annotation annotation in mAnnotations)
             {
-                if (annotation.SpanStart < currentSpanStart) 
-                {
-                    mAnnotations.Sort(); 
-                    break;
-                }
-                currentSpanStart = annotation.SpanStart;
+                mAnnotationIndex.Add(new KeyDat<int, Annotation>(annotation.SpanStart, annotation));
             }
-            int idx = mAnnotations.BinarySearch(key);
+            mAnnotationIndex.Sort();
+        }
+
+        public TextBlock[] GetAnnotatedBlocks(string selector, int spanStart, int spanEnd)
+        {
+            // TODO: set mAnnotationIndex to null if annotation array changes
+            Utils.ThrowException(mAnnotationIndex == null ? new InvalidOperationException() : null);
+            Utils.ThrowException(selector == null ? new ArgumentNullException("selector") : null);
+            Utils.ThrowException(spanStart < 0 ? new ArgumentOutOfRangeException("spanStart") : null);
+            Utils.ThrowException(spanEnd < spanStart ? new ArgumentOutOfRangeException("SpanEnd") : null);
+            KeyDat<int, Annotation> key = new KeyDat<int, Annotation>(spanStart, null);
+            ArrayList<TextBlock> blocks = new ArrayList<TextBlock>();
+            int idx = mAnnotationIndex.BinarySearch(key);
             if (idx < 0) { idx = ~idx; }
-            for (int i = idx; i < mAnnotations.Count; i++)
+            else { while (idx >= 0 && mAnnotationIndex[idx].Key == key.Key) { idx--; } idx++; }
+            for (int i = idx; i < mAnnotationIndex.Count; i++)
             {
-                Annotation annotation = mAnnotations[i];                
+                Annotation annotation = mAnnotationIndex[i].Dat;                
                 if (annotation.SpanStart > spanEnd) { break; }
                 if (annotation.SpanEnd <= spanEnd) 
                 {
@@ -318,14 +339,191 @@ namespace Latino.Workflows.TextMining
             if (writeTopElement) { writer.WriteEndElement(); }
         }
 
+        public void WriteGateXml(XmlWriter writer, bool writeTopElement)
+        {
+            Utils.ThrowException(writer == null ? new ArgumentNullException("writer") : null);
+
+            writer.WriteProcessingInstruction("xml", "version='1.0'");
+
+            if (writeTopElement) { writer.WriteStartElement("GateDocument"); }
+
+            //DOCUMENT FEATURES
+            writer.WriteStartElement("GateDocumentFeatures");
+
+            foreach (KeyValuePair<string, string> keyVal in mFeatures)
+            {
+                writer.WriteStartElement("Feature");
+
+                writer.WriteStartElement("Name");
+                writer.WriteAttributeString("className", "java.lang.String");
+                writer.WriteString(keyVal.Key);
+                writer.WriteEndElement(); //</Name>
+
+                writer.WriteStartElement("Value");
+                writer.WriteAttributeString("className", "java.lang.String");
+                writer.WriteString(keyVal.Value);
+                writer.WriteEndElement(); //</Value>
+
+                writer.WriteEndElement(); //</Feature>
+            }
+            writer.WriteEndElement();//</GateDocumentFeatures>
+
+            //TEXT WITH NODES
+            writer.WriteStartElement("TextWithNodes");           
+
+            List<int> spans = new List<int>();
+
+            foreach (Annotation annot in mAnnotations)
+            {
+                if(!spans.Contains(annot.SpanStart))
+                    spans.Add(annot.SpanStart);
+                if (!spans.Contains(annot.SpanEnd + 1))
+                    spans.Add(annot.SpanEnd + 1);
+            }
+
+            spans.Sort(); 
+
+            string textWithNodes="";
+            int k = 0;
+
+            for (int j = 0; j < mText.Val.Length;)
+            {
+                if (spans.Count>0 && j == spans[k])
+                {
+                    textWithNodes +=  "<Node id=\"" + spans[k] + "\" />";
+                    k++;
+
+                }
+
+                if (k < spans.Count)
+                {
+                    while (j != spans[k])
+                    {
+                        textWithNodes += HttpUtility.HtmlEncode(mText.Val[j].ToString());
+                        j++;
+                    }
+                }
+                else
+                {
+                    while (j < mText.Val.Length)
+                    {
+                        textWithNodes += HttpUtility.HtmlEncode(mText.Val[j].ToString());
+                        j++;
+                    }
+                }
+            }
+
+            writer.WriteRaw(textWithNodes);
+
+            writer.WriteEndElement();//</TextWithNodes>
+            
+            //ANNOTATIONS
+            writer.WriteStartElement("AnnotationSet");
+            int i = 1;
+            foreach (Annotation annot in mAnnotations)
+            {
+                string annotType = annot.Type;
+                if (annot.Type.StartsWith("Sentiment object/"))
+                    annotType = "SO";
+
+                writer.WriteStartElement("Annotation");
+                writer.WriteAttributeString("Id", i.ToString());
+                writer.WriteAttributeString("Type", annotType);
+                writer.WriteAttributeString("StartNode", annot.SpanStart.ToString());
+                writer.WriteAttributeString("EndNode", (annot.SpanEnd+1).ToString());
+
+                if (annot.Type == "Token")
+                {
+                    string annotText;
+                    annotText = (annot.GetAnnotatedBlock(mText)).Text;
+                    annot.Features.SetFeatureValue("string", annotText);
+                }
+                foreach (KeyValuePair<string, string> keyVal in annot.Features)
+                {
+                    writer.WriteStartElement("Feature");
+
+                    string replacement = keyVal.Key;
+                    bool writeInstanceName = false;
+
+                    if (annot.Type.StartsWith("Sentiment object/") && keyVal.Key == "objUri")
+                    {
+                        replacement = "Uri";
+                        writeInstanceName = true;         
+                    }
+
+                    if (annot.Type == "Token" && keyVal.Key == "posTag")
+                    {
+                        replacement = "category";
+                    }
+                    else if(annot.Type == "Token" && (keyVal.Key == "word" || keyVal.Key == "punctuation"))
+                    {
+                        replacement = "kind";
+                    }
+                    else if (annot.Type == "Token" && keyVal.Key == "lemma")
+                    {
+                        replacement = "root";
+                    }
+                    
+                    writer.WriteStartElement("Name");
+                    writer.WriteAttributeString("className", "java.lang.String");
+                    writer.WriteString(replacement);
+                    writer.WriteEndElement(); //</Name>
+                    
+
+                    writer.WriteStartElement("Value");
+                    writer.WriteAttributeString("className", "java.lang.String");
+                    writer.WriteString(keyVal.Value);
+                    writer.WriteEndElement();//</Value>
+
+                    writer.WriteEndElement(); //</Feature>
+
+                    if (writeInstanceName)
+                    {
+                        writer.WriteStartElement("Feature");
+
+                        writer.WriteStartElement("Name");
+                        writer.WriteAttributeString("className", "java.lang.String");
+                        writer.WriteString("instanceName");
+                        writer.WriteEndElement(); //</Name>
+
+                        writer.WriteStartElement("Value");
+                        writer.WriteAttributeString("className", "java.lang.String");
+                        writer.WriteString(keyVal.Value.Split('#')[1]);
+                        writer.WriteEndElement();//</Value>   
+  
+                        writer.WriteEndElement(); //</Feature>
+                    }
+                }
+
+               
+
+                writer.WriteEndElement(); //</Annotation>
+
+                i++;
+            }
+
+           
+            writer.WriteEndElement(); //</AnnotationSet>
+
+            if (writeTopElement) { writer.WriteEndElement(); } //</GateDocument>
+        }
+
         public void WriteXml(XmlWriter writer)
         {
             WriteXml(writer, /*writeTopElement=*/false); // throws ArgumentNullException
         }
 
+        public void WriteGateXml(XmlWriter writer)
+        {
+            WriteGateXml(writer, /*writeTopElement=*/false); // throws ArgumentNullException
+        }
+
         // *** Output HTML ***
 
-        public void MakeHtmlPage(TextWriter document, bool inlineCss, ArrayList<TreeNode<string>> annotationTreeList)
+        private static Set<string> uriFeatures
+            = new Set<string>(new string[] { "link", "responseUrl", "urlKey" });
+
+        internal void MakeHtmlPage(TextWriter document, bool inlineCss, ArrayList<TreeNode<string>> annotationTreeList)
         {
             string templateString = Utils.GetManifestResourceString(GetType(), "Resources.DocumentTemplate.htm");
 
@@ -335,7 +533,12 @@ namespace Latino.Workflows.TextMining
 
             foreach (KeyValuePair<string, string> f in this.Features)
             {
-                documentFeatures += "<b>" + HttpUtility.HtmlEncode(f.Key) + "</b>" + " = " + HttpUtility.HtmlEncode(Utils.Truncate(f.Value, 100) + (f.Value.Length > 100?" ...":"")) + " <br/><br/>";
+                string val = f.Value;
+                if (!uriFeatures.Contains(f.Key))
+                {
+                    val = Utils.Truncate(f.Value, 100) + (f.Value.Length > 100 ? " ..." : "");
+                }                
+                documentFeatures += "<b>" + HttpUtility.HtmlEncode(f.Key) + "</b>" + " = " + HttpUtility.HtmlEncode(val) + " <br/><br/>";
             }
 
             templateString = templateString.Replace("{$document_title}", HttpUtility.HtmlEncode(mName));
@@ -351,7 +554,7 @@ namespace Latino.Workflows.TextMining
 
         }
 
-        public string MakeHTMLAnnotationList(ArrayList<TreeNode<string>> annotationTreeList)
+        private string MakeHTMLAnnotationList(ArrayList<TreeNode<string>> annotationTreeList)
         {
             string annotationTypeList = "<ul>";
 
@@ -386,7 +589,7 @@ namespace Latino.Workflows.TextMining
             return annotationTypeList;
         }
 
-        public ArrayList<TreeNode<string>> MakeAnnotationTree()
+        internal ArrayList<TreeNode<string>> MakeAnnotationTree()
         {
             ArrayList<TreeNode<string>> result = new ArrayList<TreeNode<string>>();
 
@@ -410,20 +613,22 @@ namespace Latino.Workflows.TextMining
                     }
 
                     if (newNode)
-                    {                       
+                    {
+                        TreeNode<string> node = rootNode;
                         for (int k = 1; k < annSplit.Length; k++)
                         {
-                            rootNode.Children.Add(annSplit[k]);
+                            node.Children.Add(annSplit[k]);
 
-                            rootNode.Children[rootNode.Children.Count - 1].Elements += a.SpanStart + "," + a.SpanEnd + ",";
-                            
+                            node.Children[node.Children.Count - 1].Elements += a.SpanStart + "," + a.SpanEnd + ",";
+
                             foreach (KeyValuePair<string, string> f in a.Features)
                             {
-                                rootNode.Children[rootNode.Children.Count - 1].Elements += HttpUtility.HtmlEncode(f.Key + " = " + f.Value).Replace("'", "&#39;").Replace(":", "&#58;").Replace(",", "&#44;") + " <br/>";
+                                node.Children[node.Children.Count - 1].Elements += HttpUtility.HtmlEncode(f.Key + " = " + f.Value).Replace("'", "&#39;").Replace(":", "&#58;").Replace(",", "&#44;") + " <br/>";
                             }
-                        }
 
-                        rootNode.Children[rootNode.Children.Count - 1].Elements += ':';
+                            node.Children[node.Children.Count - 1].Elements += ':';
+                            node = node.Children[node.Children.Count - 1];
+                        }
 
                         result.Add(rootNode);
                     }

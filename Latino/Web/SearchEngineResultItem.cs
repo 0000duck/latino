@@ -1,12 +1,12 @@
 /*==========================================================================;
  *
- *  This file is part of LATINO. See http://latino.sf.net
+ *  This file is part of LATINO. See http://www.latinolib.org
  *
  *  File:    SearchEngineResultItem.cs
  *  Desc:    Search engine result set item
  *  Created: Nov-2006
  *
- *  Authors: Miha Grcar
+ *  Author:  Miha Grcar
  *
  ***************************************************************************/
 
@@ -68,7 +68,7 @@ namespace Latino.Web
                         if (!xmlReader.IsEmptyElement)
                         {
                             xmlReader.Read(); // throws XmlException
-                            Utils.ThrowException((xmlReader.NodeType != XmlNodeType.Text && xmlReader.NodeType != XmlNodeType.CDATA) ? new XmlFormatException() : null);
+                            //Utils.ThrowException((xmlReader.NodeType != XmlNodeType.Text && xmlReader.NodeType != XmlNodeType.CDATA) ? new XmlFormatException() : null);
                             mTitle = xmlReader.Value;
                         }
                     }
@@ -77,7 +77,7 @@ namespace Latino.Web
                         if (!xmlReader.IsEmptyElement)
                         {
                             xmlReader.Read(); // throws XmlException
-                            Utils.ThrowException((xmlReader.NodeType != XmlNodeType.Text && xmlReader.NodeType != XmlNodeType.CDATA) ? new XmlFormatException() : null);
+                            //Utils.ThrowException((xmlReader.NodeType != XmlNodeType.Text && xmlReader.NodeType != XmlNodeType.CDATA) ? new XmlFormatException() : null);
                             mSnippet = xmlReader.Value;
                         }
                     }

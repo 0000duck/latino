@@ -1,12 +1,14 @@
 ﻿/*==========================================================================;
  *
- *  This file is part of LATINO. See http://latino.sf.net
+ *  This file is part of LATINO. See http://www.latinolib.org
  *
  *  File:    Exceptions.cs
  *  Desc:    Additional exception classes
  *  Created: Feb-2008
  *
- *  Authors: Miha Grcar
+ *  Author:  Miha Grcar
+ *
+ *  License: GNU LGPL (http://www.gnu.org/licenses/lgpl.txt)
  *
  ***************************************************************************/
 
@@ -49,19 +51,6 @@ namespace Latino
     public class ArgumentValueException : ArgumentException
     {
         public ArgumentValueException(string paramName) : base("The argument value or state is not valid.", paramName)
-        {
-        }
-    }
-
-    /* .-----------------------------------------------------------------------
-       |
-       |  Class XmlFormatException
-       |
-       '-----------------------------------------------------------------------
-    */
-    public class XmlFormatException : Exception
-    {
-        public XmlFormatException() : base("The XML document is not in the expected format.")
         {
         }
     }

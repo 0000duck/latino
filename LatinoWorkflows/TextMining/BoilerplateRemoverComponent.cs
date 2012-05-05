@@ -6,7 +6,7 @@
  *  Desc:    Boilerplate remover component 
  *  Created: Apr-2011
  *
- *  Authors: Miha Grcar
+ *  Author:  Miha Grcar
  *
  ***************************************************************************/
 
@@ -15,8 +15,9 @@ using System.IO;
 using System.Text;
 using System.Collections.Generic;
 using Latino.WebMining;
+using Latino.Workflows.TextMining;
 
-namespace Latino.Workflows.TextMining
+namespace Latino.Workflows.WebMining
 {
     /* .-----------------------------------------------------------------------
        |
@@ -26,19 +27,21 @@ namespace Latino.Workflows.TextMining
     */
     public class BoilerplateRemoverComponent : DocumentProcessor
     {
+        private BoilerplateRemover mBoilerplateRemover
+            = BoilerplateRemover.GetDefaultBoilerplateRemover();
+
         public BoilerplateRemoverComponent() : base(typeof(BoilerplateRemoverComponent))
         {
         }
 
-        protected override void ProcessDocument(Document document)
+        public/*protected*/ override void ProcessDocument(Document document)
         {
-            string contentType = document.Features.GetFeatureValue("_contentType");
+            string contentType = document.Features.GetFeatureValue("contentType");
             if (contentType != "Html") { return; } 
             try
             {
-                BoilerplateRemover br = BoilerplateRemover.GetDefaultBoilerplateRemover();
                 List<BoilerplateRemover.HtmlBlock> blocks;
-                br.ExtractText(new StringReader(document.Text), BoilerplateRemover.TextClass.Unknown, out blocks);
+                mBoilerplateRemover.ExtractText(new StringReader(document.Text), BoilerplateRemover.TextClass.Unknown, out blocks);
                 StringBuilder text = new StringBuilder();
                 foreach (BoilerplateRemover.HtmlBlock block in blocks)
                 {
@@ -51,7 +54,7 @@ namespace Latino.Workflows.TextMining
                     }
                 }
                 document.Text = text.ToString();
-                document.Features.SetFeatureValue("_contentType", "Text");
+                document.Features.SetFeatureValue("contentType", "Text");
             }
             catch (Exception exception)
             {

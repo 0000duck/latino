@@ -1,12 +1,14 @@
 ﻿/*==========================================================================;
  *
- *  This file is part of LATINO. See http://latino.sf.net
+ *  This file is part of LATINO. See http://www.latinolib.org
  *
  *  File:    MaxEntClassifier.cs
  *  Desc:    Maximum entropy classifier (LATINO wrapper)
  *  Created: Oct-2009
  *
- *  Authors: Miha Grcar
+ *  Author:  Miha Grcar
+ *
+ *  License: GNU LGPL (http://www.gnu.org/licenses/lgpl.txt)
  *
  ***************************************************************************/
 
@@ -21,7 +23,7 @@ namespace Latino.Model
        |
        '-----------------------------------------------------------------------
     */
-    public class MaximumEntropyClassifier<LblT> : IModel<LblT, BinaryVector<int>.ReadOnly>
+    public class MaximumEntropyClassifier<LblT> : IModel<LblT, BinaryVector>
     {
         private bool mMoveData
             = false;
@@ -89,11 +91,11 @@ namespace Latino.Model
             set { mNormalize = value; }
         }
 
-        // *** IModel<LblT, BinaryVector<int>.ReadOnly> interface implementation ***
+        // *** IModel<LblT, BinaryVector> interface implementation ***
 
         public Type RequiredExampleType
         {
-            get { return typeof(BinaryVector<int>.ReadOnly); }
+            get { return typeof(BinaryVector); }
         }
 
         public bool IsTrained
@@ -101,7 +103,7 @@ namespace Latino.Model
             get { return mLambda != null; }
         }
 
-        public void Train(ILabeledExampleCollection<LblT, BinaryVector<int>.ReadOnly> dataset)
+        public void Train(ILabeledExampleCollection<LblT, BinaryVector> dataset)
         {
             Utils.ThrowException(dataset == null ? new ArgumentNullException("dataset") : null);
             Utils.ThrowException(dataset.Count == 0 ? new ArgumentValueException("dataset") : null);
@@ -112,11 +114,11 @@ namespace Latino.Model
         void IModel<LblT>.Train(ILabeledExampleCollection<LblT> dataset)
         {
             Utils.ThrowException(dataset == null ? new ArgumentNullException("dataset") : null);
-            Utils.ThrowException(!(dataset is ILabeledExampleCollection<LblT, BinaryVector<int>.ReadOnly>) ? new ArgumentTypeException("dataset") : null);
-            Train((ILabeledExampleCollection<LblT, BinaryVector<int>.ReadOnly>)dataset); // throws ArgumentValueException
+            Utils.ThrowException(!(dataset is ILabeledExampleCollection<LblT, BinaryVector>) ? new ArgumentTypeException("dataset") : null);
+            Train((ILabeledExampleCollection<LblT, BinaryVector>)dataset); // throws ArgumentValueException
         }
 
-        public Prediction<LblT> Predict(BinaryVector<int>.ReadOnly example)
+        public Prediction<LblT> Predict(BinaryVector example)
         {
             Utils.ThrowException(mLambda == null ? new InvalidOperationException() : null);
             Utils.ThrowException(example == null ? new ArgumentNullException("example") : null);
@@ -126,8 +128,8 @@ namespace Latino.Model
         Prediction<LblT> IModel<LblT>.Predict(object example)
         {
             Utils.ThrowException(example == null ? new ArgumentNullException("example") : null);
-            Utils.ThrowException(!(example is BinaryVector<int>.ReadOnly) ? new ArgumentTypeException("example") : null);
-            return Predict((BinaryVector<int>.ReadOnly)example); // throws InvalidOperationException
+            Utils.ThrowException(!(example is BinaryVector) ? new ArgumentTypeException("example") : null);
+            return Predict((BinaryVector)example); // throws InvalidOperationException
         }
 
         // *** ISerializable interface implementation ***

@@ -6,7 +6,7 @@
  *  Desc:    Generic (customizable) stream data consumer
  *  Created: Dec-2010
  *
- *  Authors: Miha Grcar
+ *  Author:  Miha Grcar
  *
  ***************************************************************************/
 
@@ -25,7 +25,7 @@ namespace Latino.Workflows
         public event ConsumeDataHandler OnConsumeData
             = null;
 
-        public GenericStreamDataConsumer() : base(typeof(GenericStreamDataConsumer).ToString())
+        public GenericStreamDataConsumer() : base(typeof(GenericStreamDataConsumer))
         {
         }
 

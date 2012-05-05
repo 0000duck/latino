@@ -6,7 +6,7 @@
  *  Desc:    Generic (customizable) stream data processor
  *  Created: Dec-2010
  *
- *  Authors: Miha Grcar
+ *  Author:  Miha Grcar
  *
  ***************************************************************************/
 
@@ -25,7 +25,7 @@ namespace Latino.Workflows
         public event ProcessDataHandler OnProcessData
             = null;
 
-        public GenericStreamDataProcessor() : base(typeof(GenericStreamDataProcessor).ToString())
+        public GenericStreamDataProcessor() : base(typeof(GenericStreamDataProcessor))
         {
         }
 

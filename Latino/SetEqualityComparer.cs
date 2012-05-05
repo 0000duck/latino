@@ -1,12 +1,14 @@
 ﻿/*==========================================================================;
  *
- *  This file is part of LATINO. See http://latino.sf.net
+ *  This file is part of LATINO. See http://www.latinolib.org
  *
  *  File:    SetEqualityComparer.cs
  *  Desc:    Set equality comparer
  *  Created: Nov-2007
  *
- *  Authors: Miha Grcar
+ *  Author:  Miha Grcar
+ *
+ *  License: GNU LGPL (http://www.gnu.org/licenses/lgpl.txt)
  *
  ***************************************************************************/
 
@@ -43,7 +45,7 @@ namespace Latino
         {
             if (x == null && y == null) { return true; }
             if (x == null || y == null) { return false; }
-            return x.Count == y.Count && Set<T>.Difference(x, y).Count == 0;
+            return Equals(x.Inner, y.Inner);
         }
 
         public int GetHashCode(Set<T> obj)
@@ -57,9 +59,7 @@ namespace Latino
         public int GetHashCode(Set<T>.ReadOnly obj)
         {
             Utils.ThrowException(obj == null ? new ArgumentNullException("obj") : null);
-            int hashCode = 0;
-            foreach (T item in obj) { hashCode ^= item.GetHashCode(); }
-            return hashCode;
+            return GetHashCode(obj.Inner);
         }
 
         bool IEqualityComparer.Equals(object x, object y)

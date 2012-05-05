@@ -6,7 +6,7 @@
  *  Desc:    Regex-based tokenizer component
  *  Created: Dec-2010
  *
- *  Authors: Miha Grcar
+ *  Author:  Miha Grcar
  *
  ***************************************************************************/
 
@@ -50,9 +50,9 @@ namespace Latino.Workflows.TextMining
             set { mTokenizer.TokenRegexOptions = value; }
         }
 
-        protected override void ProcessDocument(Document document)
+        public/*protected*/ override void ProcessDocument(Document document)
         {
-            string contentType = document.Features.GetFeatureValue("_contentType");
+            string contentType = document.Features.GetFeatureValue("contentType");
             if (contentType != "Text") { return; }
             try
             {

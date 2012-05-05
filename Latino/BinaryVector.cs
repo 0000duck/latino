@@ -1,12 +1,14 @@
 ﻿/*==========================================================================;
  *
- *  This file is part of LATINO. See http://latino.sf.net
+ *  This file is part of LATINO. See http://www.latinolib.org
  *
  *  File:    BinaryVector.cs
  *  Desc:    Binary vector data structure 
  *  Created: Oct-2009
  *
- *  Authors: Miha Grcar
+ *  Author:  Miha Grcar
+ *
+ *  License: GNU LGPL (http://www.gnu.org/licenses/lgpl.txt)
  *
  ***************************************************************************/
 
@@ -19,15 +21,15 @@ namespace Latino
 {
     /* .-----------------------------------------------------------------------
        |
-       |  Class BinaryVector<T>
+       |  Class BinaryVector
        |
        '-----------------------------------------------------------------------
     */
-    public class BinaryVector<T> : ICollection<T>, ICollection, IEnumerable<T>, ICloneable<BinaryVector<T>>, IDeeplyCloneable<BinaryVector<T>>, IContentEquatable<BinaryVector<T>>, 
-        ISerializable where T : IComparable<T>
+    public class BinaryVector : ICollection<int>, ICollection, IEnumerable<int>, ICloneable<BinaryVector>, IDeeplyCloneable<BinaryVector>, IContentEquatable<BinaryVector>, 
+        ISerializable 
     {
-        private ArrayList<T> mVec
-            = new ArrayList<T>();
+        private ArrayList<int> mVec
+            = new ArrayList<int>();
 
         public BinaryVector()
         {
@@ -38,12 +40,12 @@ namespace Latino
             Load(reader); // throws ArgumentNullException, serialization-related exceptions
         }
 
-        public BinaryVector(IEnumerable<T> items)
+        public BinaryVector(IEnumerable<int> items)
         {
             AddRange(items); // throws ArgumentNullException
         }
 
-        public List<T> Inner
+        public List<int> Inner
         {
             get { return mVec; }
         }
@@ -68,12 +70,12 @@ namespace Latino
             }
         }
 
-        public void AddRange(IEnumerable<T> items)
+        public void AddRange(IEnumerable<int> items)
         {
             Utils.ThrowException(items == null ? new ArgumentNullException("items") : null);
             int oldLen = mVec.Count;
 #if THROW_EXCEPTIONS
-            foreach (T item in items) { Utils.ThrowException(item == null ? new ArgumentValueException("items") : null); }
+            foreach (int item in items) { Utils.ThrowException(item == null ? new ArgumentValueException("items") : null); }
 #endif
             mVec.AddRange(items);
             if (mVec.Count == oldLen) { return; }
@@ -81,14 +83,12 @@ namespace Latino
             RemoveDuplicates();
         }
 
-        public T[] ToArray()
+        public int[] ToArray()
         {
-            T[] array = new T[mVec.Count];
-            CopyTo(array, 0);
-            return array;
+            return mVec.ToArray();
         }
 
-        public T this[int idx]
+        public int this[int idx]
         {
             get { return mVec[idx]; } // throws ArgumentOutOfRangeException
         }
@@ -103,12 +103,12 @@ namespace Latino
             return mVec.ToArray<NewT>(fmtProvider); // throws InvalidCastException, FormatException, OverflowException
         }
 
-        public void RemoveRange(IEnumerable<T> items)
+        public void RemoveRange(IEnumerable<int> items)
         {
             Utils.ThrowException(items == null ? new ArgumentNullException("items") : null);
-            Set<T> tmp = new Set<T>(items); // throws ArgumentNullException
-            ArrayList<T> newVec = new ArrayList<T>(mVec.Count);
-            foreach (T item in mVec)
+            Set<int> tmp = new Set<int>(items); // throws ArgumentNullException
+            ArrayList<int> newVec = new ArrayList<int>(mVec.Count);
+            foreach (int item in mVec)
             {
                 if (!tmp.Contains(item)) { newVec.Add(item); }
             }
@@ -118,7 +118,7 @@ namespace Latino
         public override string ToString()
         {
             StringBuilder str = new StringBuilder("(");
-            foreach (T item in mVec)
+            foreach (int item in mVec)
             {
                 str.Append(" ");
                 str.Append(item);
@@ -127,9 +127,9 @@ namespace Latino
             return str.ToString();
         }
 
-        // *** ICollection<T> interface implementation ***
+        // *** ICollection<int> interface implementation ***
 
-        public void Add(T item)
+        public void Add(int item)
         {
             Utils.ThrowException(item == null ? new ArgumentNullException("item") : null);
             int idx = mVec.BinarySearch(item);
@@ -142,17 +142,17 @@ namespace Latino
             mVec.Clear();
         }
 
-        public bool Contains(T item)
+        public bool Contains(int item)
         {
             Utils.ThrowException(item == null ? new ArgumentNullException("item") : null);
             return mVec.BinarySearch(item) >= 0;
         }
 
-        public void CopyTo(T[] array, int index)
+        public void CopyTo(int[] array, int index)
         {
             Utils.ThrowException(array == null ? new ArgumentNullException("array") : null);
             Utils.ThrowException(index + mVec.Count > array.Length ? new ArgumentOutOfRangeException("index") : null);
-            foreach (T item in mVec)
+            foreach (int item in mVec)
             {
                 array.SetValue(item, index++);
             }
@@ -168,9 +168,8 @@ namespace Latino
             get { return false; }
         }
 
-        public bool Remove(T item)
+        public bool Remove(int item)
         {
-            Utils.ThrowException(item == null ? new ArgumentNullException("item") : null);
             int idx = mVec.BinarySearch(item);
             if (idx >= 0)
             {
@@ -186,7 +185,7 @@ namespace Latino
         {
             Utils.ThrowException(array == null ? new ArgumentNullException("array") : null);
             Utils.ThrowException(index + mVec.Count > array.Length ? new ArgumentOutOfRangeException("index") : null);
-            foreach (T item in mVec)
+            foreach (int item in mVec)
             {
                 array.SetValue(item, index++);
             }
@@ -202,9 +201,9 @@ namespace Latino
             get { throw new NotSupportedException(); }
         }
 
-        // *** IEnumerable<T> interface implementation ***
+        // *** IEnumerable<int> interface implementation ***
 
-        public IEnumerator<T> GetEnumerator()
+        public IEnumerator<int> GetEnumerator()
         {
             return mVec.GetEnumerator();
         }
@@ -218,9 +217,9 @@ namespace Latino
 
         // *** ICloneable interface implementation ***
 
-        public BinaryVector<T> Clone()
+        public BinaryVector Clone()
         {
-            BinaryVector<T> clone = new BinaryVector<T>();
+            BinaryVector clone = new BinaryVector();
             clone.mVec = mVec.Clone();
             return clone;
         }
@@ -232,9 +231,9 @@ namespace Latino
 
         // *** IDeeplyCloneable interface implementation ***
 
-        public BinaryVector<T> DeepClone()
+        public BinaryVector DeepClone()
         {
-            BinaryVector<T> clone = new BinaryVector<T>();
+            BinaryVector clone = new BinaryVector();
             clone.mVec = mVec.DeepClone();
             return clone;
         }
@@ -244,9 +243,9 @@ namespace Latino
             return DeepClone();
         }
 
-        // *** IContentEquatable<BinaryVector<T>> interface implementation ***
+        // *** IContentEquatable<BinaryVector> interface implementation ***
 
-        public bool ContentEquals(BinaryVector<T> other)
+        public bool ContentEquals(BinaryVector other)
         {
             if (other == null || mVec.Count != other.mVec.Count) { return false; }
             for (int i = 0; i < mVec.Count; i++)
@@ -258,8 +257,8 @@ namespace Latino
 
         bool IContentEquatable.ContentEquals(object other)
         {
-            Utils.ThrowException((other != null && !(other is BinaryVector<T>)) ? new ArgumentTypeException("other") : null);
-            return ContentEquals((BinaryVector<T>)other);
+            Utils.ThrowException((other != null && !(other is BinaryVector)) ? new ArgumentTypeException("other") : null);
+            return ContentEquals((BinaryVector)other);
         }
 
         // *** ISerializable interface implementation ***
@@ -269,9 +268,9 @@ namespace Latino
             Utils.ThrowException(writer == null ? new ArgumentNullException("writer") : null);
             // the following statements throw serialization-related exceptions 
             writer.WriteInt(mVec.Count);
-            foreach (T item in mVec)
+            foreach (int item in mVec)
             {
-                writer.WriteValueOrObject<T>(item);
+                writer.WriteValueOrObject<int>(item);
             }
         }
 
@@ -283,29 +282,36 @@ namespace Latino
             int count = reader.ReadInt();
             for (int i = 0; i < count; i++)
             {
-                mVec.Add(reader.ReadValueOrObject<T>());
+                mVec.Add(reader.ReadValueOrObject<int>());
             }
         }
 
         // *** Implicit cast to a read-only adapter ***
 
-        public static implicit operator BinaryVector<T>.ReadOnly(BinaryVector<T> vec)
+        public static implicit operator BinaryVector.ReadOnly(BinaryVector vec)
         {
             if (vec == null) { return null; }
-            return new BinaryVector<T>.ReadOnly(vec);
+            return new BinaryVector.ReadOnly(vec);
+        }
+
+        // *** Equality comparer ***
+
+        public static IEqualityComparer<BinaryVector> GetEqualityComparer()
+        {
+            return GenericEqualityComparer<BinaryVector>.Instance;
         }
 
         /* .-----------------------------------------------------------------------
            |
-           |  Class BinaryVector<T>.ReadOnly
+           |  Class BinaryVector.ReadOnly
            |
            '-----------------------------------------------------------------------
         */
-        public class ReadOnly : IReadOnlyAdapter<BinaryVector<T>>, ICollection, IEnumerable<T>, IEnumerable, IContentEquatable<BinaryVector<T>.ReadOnly>, ISerializable
+        public class ReadOnly : IReadOnlyAdapter<BinaryVector>, ICollection, IEnumerable<int>, IEnumerable, IContentEquatable<BinaryVector.ReadOnly>, ISerializable
         {
-            private BinaryVector<T> mVec;
+            private BinaryVector mVec;
 
-            public ReadOnly(BinaryVector<T> vec)
+            public ReadOnly(BinaryVector vec)
             {
                 Utils.ThrowException(vec == null ? new ArgumentNullException("vec") : null);
                 mVec = vec;
@@ -313,15 +319,15 @@ namespace Latino
 
             public ReadOnly(BinarySerializer reader)
             {
-                mVec = new BinaryVector<T>(reader); 
+                mVec = new BinaryVector(reader); 
             }
 
-            public T[] ToArray()
+            public int[] ToArray()
             {
                 return mVec.ToArray();
             }
 
-            public T this[int idx]
+            public int this[int idx]
             {
                 get { return mVec[idx]; }
             }
@@ -343,7 +349,7 @@ namespace Latino
 
             // *** IReadOnlyAdapter interface implementation ***
 
-            public BinaryVector<T> GetWritableCopy()
+            public BinaryVector GetWritableCopy()
             {
                 return mVec.Clone();
             }
@@ -353,19 +359,24 @@ namespace Latino
                 return GetWritableCopy();
             }
 
-            public BinaryVector<T> Inner
+            public BinaryVector Inner
             {
                 get { return mVec; }
             }
 
-            // *** Partial ICollection<T> interface implementation ***
+            object IReadOnlyAdapter.Inner
+            {
+                get { return Inner; }
+            }
 
-            public bool Contains(T item)
+            // *** Partial ICollection<int> interface implementation ***
+
+            public bool Contains(int item)
             {
                 return mVec.Contains(item);
             }
 
-            public void CopyTo(T[] array, int index)
+            public void CopyTo(int[] array, int index)
             {
                 mVec.CopyTo(array, index);
             }
@@ -397,9 +408,9 @@ namespace Latino
                 get { throw new NotSupportedException(); }
             }
 
-            // *** IEnumerable<T> interface implementation ***
+            // *** IEnumerable<int> interface implementation ***
 
-            public IEnumerator<T> GetEnumerator()
+            public IEnumerator<int> GetEnumerator()
             {
                 return mVec.GetEnumerator();
             }
@@ -411,17 +422,17 @@ namespace Latino
                 return ((IEnumerable)mVec).GetEnumerator();
             }
 
-            // *** IContentEquatable<BinaryVector<T>.ReadOnly> interface implementation ***
+            // *** IContentEquatable<BinaryVector.ReadOnly> interface implementation ***
 
-            public bool ContentEquals(BinaryVector<T>.ReadOnly other)
+            public bool ContentEquals(BinaryVector.ReadOnly other)
             {
                 return other != null && mVec.ContentEquals(other.Inner);
             }
 
             bool IContentEquatable.ContentEquals(object other)
             {
-                Utils.ThrowException((other != null && !(other is BinaryVector<T>.ReadOnly)) ? new ArgumentTypeException("other") : null);
-                return ContentEquals((BinaryVector<T>.ReadOnly)other);
+                Utils.ThrowException((other != null && !(other is BinaryVector.ReadOnly)) ? new ArgumentTypeException("other") : null);
+                return ContentEquals((BinaryVector.ReadOnly)other);
             }
 
             // *** ISerializable interface implementation ***
@@ -429,6 +440,13 @@ namespace Latino
             public void Save(BinarySerializer writer)
             {
                 mVec.Save(writer);
+            }
+
+            // *** Equality comparer ***
+
+            public static IEqualityComparer<BinaryVector.ReadOnly> GetEqualityComparer()
+            {
+                return GenericEqualityComparer<BinaryVector.ReadOnly>.Instance;
             }
         }
     }

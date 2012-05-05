@@ -1,11 +1,10 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
-<Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003" ToolsVersion="4.0">
+<Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003" ToolsVersion="3.5">
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
     <ProductVersion>8.0.50727</ProductVersion>
     <SchemaVersion>2.0</SchemaVersion>
-    <ProjectGuid>{FFA3AB32-D56A-4544-BCF2-CBC51B57550B}</ProjectGuid>
+    <ProjectGuid>{5B86AAD5-3FEA-487C-A518-4F846AF09E18}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>Latino</RootNamespace>
@@ -18,11 +17,11 @@
     </SccAuxPath>
     <SccProvider>
     </SccProvider>
-    <TargetFrameworkVersion>v2.0</TargetFrameworkVersion>
     <FileUpgradeFlags>
     </FileUpgradeFlags>
     <OldToolsVersion>2.0</OldToolsVersion>
-    <UpgradeBackupLocation />
+    <UpgradeBackupLocation>
+    </UpgradeBackupLocation>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
@@ -41,8 +40,6 @@
     <Optimize>true</Optimize>
     <DebugType>pdbonly</DebugType>
     <PlatformTarget>AnyCPU</PlatformTarget>
-    <CodeAnalysisRuleAssemblies>
-    </CodeAnalysisRuleAssemblies>
     <CodeAnalysisUseTypeNameInSuppression>true</CodeAnalysisUseTypeNameInSuppression>
     <CodeAnalysisModuleSuppressionsFile>GlobalSuppressions.cs</CodeAnalysisModuleSuppressionsFile>
     <ErrorReport>prompt</ErrorReport>
@@ -82,6 +79,7 @@
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="System" />
+    <Reference Include="System.configuration" />
     <Reference Include="System.Data" />
     <Reference Include="System.Drawing" />
     <Reference Include="System.Web" />
@@ -100,13 +98,15 @@
     <Compile Include="Model\NaiveBayesClassifier.cs" />
     <Compile Include="Model\SvmLightLib.cs" />
     <Compile Include="Model\SvmMulticlassFast.cs" />
+    <Compile Include="MultiSet.cs" />
+    <Compile Include="MultiSetEqualityComparer.cs" />
     <Compile Include="Persistance\DatabaseConnection.cs" />
     <Compile Include="TextMining\LemmaSharp\LemmatizerPrebuilt.cs" />
     <Compile Include="TextMining\LemmaSharp\LemmatizerPrebuiltCompact.cs" />
     <Compile Include="TextMining\LemmaSharp\LemmatizerPrebuiltCompressed.cs" />
     <Compile Include="TextMining\LemmaSharp\LemmatizerPrebuiltData.cs" />
     <Compile Include="TextMining\LemmaSharp\LemmatizerPrebuiltFull.cs" />
-    <Compile Include="TextMining\MultiLangBowSpace.cs" />
+    <Compile Include="TextMining\SimpleTokenizer.cs" />
     <Compile Include="WebMining\BoilerplateRemover.cs" />
     <Compile Include="TextMining\CustomStemmer.cs" />
     <Compile Include="WebMining\HtmlAgilityPack\EncodingFoundException.cs" />
@@ -143,6 +143,8 @@
     <Compile Include="Visualization\DrawableObjects\Label.cs" />
     <Compile Include="Visualization\DrawableObjects\Picture.cs" />
     <Compile Include="Visualization\RTree.cs" />
+    <Compile Include="WebMining\UrlNormalizer.cs" />
+    <Compile Include="WebMining\UrlTree.cs" />
     <Compile Include="Web\CacheRecord.cs" />
     <Compile Include="Web\DatabaseCache.cs" />
     <Compile Include="Web\Exceptions.cs" />
@@ -153,7 +155,6 @@
     <Compile Include="Web\SearchEngineResultSet.cs" />
     <Compile Include="Experimental\Web\BingSearchEngine.cs" />
     <Compile Include="Web\YahooSearchEngine.cs" />
-    <Compile Include="Experimental\MultiSet.cs" />
     <Compile Include="IPair.cs" />
     <Compile Include="IEnumerableList.cs" />
     <Compile Include="ICloneable.cs" />
@@ -327,6 +328,7 @@
     <EmbeddedResource Include="TextMining\Resources\LanguageDetector\Slovene.ldp" />
     <EmbeddedResource Include="TextMining\Resources\LanguageDetector\Spanish.ldp" />
     <EmbeddedResource Include="TextMining\Resources\LanguageDetector\Swedish.ldp" />
+	<EmbeddedResource Include="TextMining\Resources\CharRanges.txt" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="TextMining\Resources\LemmaSharp\compressed-m-en.lem" />
@@ -343,7 +345,7 @@
     <EmbeddedResource Include="TextMining\Resources\LemmaSharp\compressed-me-sr.lem" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="Migrated rules for Latino.ruleset" />
+    <EmbeddedResource Include="WebMining\Resources\UrlNormalizer\EffectiveTldNames.dat" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
