@@ -31,6 +31,35 @@ namespace Latino
             return newVector;
         }
 
+        /// <summary>
+        /// Adds each element of vec to corresponding element of addTo vector
+        /// addTo vector is being changed in place
+        /// </summary>
+        public static void AddInPlace(SparseVector<double> addTo, SparseVector<double> vec)
+        {
+            foreach (var vecIdx in vec.InnerIdx)
+            {
+                var num = addTo.TryGet(vecIdx, 0.0);
+                addTo[vecIdx] = num + vec[vecIdx];
+            }
+        }
+
+        /// <summary>
+        /// Divides each element of dividee with corresponding element of divisor in place
+        /// Dividee is being changed
+        /// </summary>
+        public static void DivideInPlace(SparseVector<double> dividee, SparseVector<double> divisor)
+        {
+            foreach (var divIdx in divisor.InnerIdx)
+            {
+                var num = dividee.TryGet(divIdx, 0.0);
+                if (num < Double.Epsilon)
+                    continue;
+
+                dividee[divIdx] = num/divisor[divIdx];
+            }
+        }
+
         public static void Sqrt(SparseVector<double> vec)
         {
             var innerDat = vec.InnerDat;
