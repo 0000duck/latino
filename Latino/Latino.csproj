@@ -125,6 +125,7 @@
     <Compile Include="TextMining\LemmaSharp\LemmatizerPrebuiltFull.cs" />
     <Compile Include="TextMining\MultiLangBowSpace.cs" />
     <Compile Include="TextMining\SimpleTokenizer.cs" />
+    <Compile Include="VectorUtils.cs" />
     <Compile Include="WebMining\BoilerplateRemover.cs" />
     <Compile Include="TextMining\CustomStemmer.cs" />
     <Compile Include="WebMining\HtmlAgilityPack\EncodingFoundException.cs" />
