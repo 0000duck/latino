@@ -59,7 +59,7 @@ namespace Latino.Workflows.Persistance
         {
             Utils.ThrowException(!(data is DocumentCorpus) ? new ArgumentTypeException("data") : null);
             DocumentCorpus corpus = (DocumentCorpus)data;
-            string corpusId = Guid.NewGuid().ToString("N");
+            string corpusId = corpus.Features.GetFeatureValue("guid").Replace("-", "");
             StringWriter stringWriter;
             XmlWriterSettings xmlSettings = new XmlWriterSettings();
             xmlSettings.Indent = true;
@@ -102,7 +102,7 @@ namespace Latino.Workflows.Persistance
             // write to database
             if (mWriteToDatabase)
             {
-                bool success = mConnection.ExecuteNonQuery("insert into Corpora (id, title, language, sourceUrl, timeStart, timeEnd, siteId, dump) values (?, ?, ?, ?, ?, ?, ?, ?)",
+                bool success = mConnection.ExecuteNonQuery("insert into Corpora (id, title, language, sourceUrl, timeStart, timeEnd, siteId, rejected) values (?, ?, ?, ?, ?, ?, ?, ?)",
                     corpusId,
                     Utils.Truncate(corpus.Features.GetFeatureValue("title"), 400),
                     Utils.Truncate(corpus.Features.GetFeatureValue("language"), 100),
@@ -110,7 +110,7 @@ namespace Latino.Workflows.Persistance
                     Utils.Truncate(corpus.Features.GetFeatureValue("timeStart"), 26),
                     Utils.Truncate(corpus.Features.GetFeatureValue("timeEnd"), 26),
                     Utils.Truncate(corpus.Features.GetFeatureValue("siteId"), 100),
-                    mIsDumpWriter
+                    mIsDumpWriter 
                 );
                 if (!success) { mLogger.Warn("ConsumeData", "Unable to write to database."); }
                 foreach (Document document in corpus.Documents)
@@ -118,7 +118,9 @@ namespace Latino.Workflows.Persistance
                     string documentId = new Guid(document.Features.GetFeatureValue("guid")).ToString("N");
                     string bpCharCountStr = document.Features.GetFeatureValue("bprBoilerplateCharCount");
                     string contentCharCountStr = document.Features.GetFeatureValue("bprContentCharCount");
-                    success = mConnection.ExecuteNonQuery("insert into Documents (id, corpusId, name, description, category, link, responseUrl, urlKey, time, pubDate, mimeType, contentType, charSet, contentLength, detectedLanguage, detectedCharRange, domain, bpCharCount, contentCharCount, dump) values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+                    string unseenContentCharCountStr = document.Features.GetFeatureValue("unseenContentCharCount");
+                    string unseenContent = document.Features.GetFeatureValue("unseenContent");
+                    success = mConnection.ExecuteNonQuery("insert into Documents (id, corpusId, name, description, category, link, responseUrl, urlKey, time, pubDate, mimeType, contentType, charSet, contentLength, detectedLanguage, detectedCharRange, domain, bpCharCount, contentCharCount, rejected, unseenContent, unseenContentCharCount, rev) values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
                         documentId,
                         corpusId,
                         Utils.Truncate(document.Name, 400),
@@ -137,8 +139,11 @@ namespace Latino.Workflows.Persistance
                         Utils.Truncate(document.Features.GetFeatureValue("detectedCharRange"), 100),                        
                         Utils.Truncate(document.Features.GetFeatureValue("domainName"), 100),
                         bpCharCountStr == null ? null : (object)Convert.ToInt32(bpCharCountStr),
-                        contentCharCountStr == null ? null : (object)Convert.ToInt32(contentCharCountStr),
-                        mIsDumpWriter
+                        contentCharCountStr == null ? null : (object)Convert.ToInt32(contentCharCountStr),                        
+                        mIsDumpWriter,
+                        Utils.Truncate(unseenContent, 20),
+                        unseenContentCharCountStr == null ? null : (object)Convert.ToInt32(unseenContentCharCountStr),
+                        Convert.ToInt32(document.Features.GetFeatureValue("rev"))
                     );
                     if (!success) { mLogger.Warn("ConsumeData", "Unable to write to database."); }
                 }

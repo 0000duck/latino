@@ -15,7 +15,8 @@ GO
 SET ANSI_PADDING ON
 GO
 CREATE TABLE [dbo].[TextBlocks](
-	[id] [char](32) NOT NULL,
+	[corpusId] [char](32) NOT NULL,
+	[docId] [char](32) NOT NULL,
 	[hashCodes] [text] NOT NULL
 ) ON [PRIMARY] TEXTIMAGE_ON [PRIMARY]
 GO
@@ -45,10 +46,13 @@ CREATE TABLE [dbo].[Documents](
 	[contentLength] [int] NULL,
 	[detectedLanguage] [nvarchar](100) NULL,
 	[detectedCharRange] [nvarchar](100) NULL,
-	[dump] [bit] NOT NULL,
+	[rejected] [bit] NOT NULL,
+	[unseenContent] [varchar](3) NULL,
 	[domain] [varchar](100) NULL,
 	[bpCharCount] [int] NULL,
-	[contentCharCount] [int] NULL
+	[contentCharCount] [int] NULL,
+	[unseenContentCharCount] [int] NULL,
+	[rev] [int] NULL
 ) ON [PRIMARY] 
 GO
 SET ANSI_PADDING OFF
@@ -68,7 +72,7 @@ CREATE TABLE [dbo].[Corpora](
 	[timeStart] [char](26) NULL,
 	[timeEnd] [char](26) NULL,
 	[siteId] [nvarchar](100) NULL,
-	[dump] [bit] NOT NULL
+	[rejected] [bit] NOT NULL
 ) ON [PRIMARY] 
 GO
 SET ANSI_PADDING OFF
