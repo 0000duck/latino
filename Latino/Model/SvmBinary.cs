@@ -106,7 +106,20 @@ namespace Latino.Model
         {
             Utils.ThrowException(mModelId == -1 ? new InvalidOperationException() : null);
             Utils.ThrowException(example == null ? new ArgumentNullException("example") : null);
+
             Prediction<LblT> result = new Prediction<LblT>();
+
+            // Special cases for broken datasets
+            if (mIdxToLbl.Count == 1)
+            {
+                result.Inner.Add(new KeyDat<double, LblT>(1.0, mIdxToLbl[0]));
+            }
+
+            if (mIdxToLbl.Count < 2)
+            {
+                return result;
+            }
+            
             int[] idx = new int[example.Count];
             float[] val = new float[example.Count];
             for (int i = 0; i < example.Count; i++)
