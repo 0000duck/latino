@@ -22,11 +22,8 @@ namespace Latino.Model
     */
     internal static class SvmLightLib
     {
-#if DEBUG
-        const string SVMLIGHTLIB_DLL = "SvmLightLibDebug.dll";
-#else
-        const string SVMLIGHTLIB_DLL = "SvmLightLib.dll";
-#endif
+
+        const string SVMLIGHTLIB_DLL = "SvmLightLib";
         public delegate void WriteByteCallback(byte b);
         public delegate byte ReadByteCallback();
 
