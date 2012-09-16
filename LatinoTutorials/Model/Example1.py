@@ -5,13 +5,11 @@ from Latino.Model import *
 # load datasets
 trainSet = ModelUtils.LoadDataset("..\\..\\Datasets\\Example1\\train.dat")
 testSet = ModelUtils.LoadDataset("..\\..\\Datasets\\Example1\\test.dat")
- 
 # train a centroid classifier
 classifier = CentroidClassifier[int]()
 classifier.Similarity = CosineSimilarity.Instance
 classifier.NormalizeCentroids = False
 classifier.Train(trainSet)
- 
 # test the classifier
 correct = 0
 all = 0
@@ -20,6 +18,5 @@ for labeledExample in testSet:
     prediction = classifier.Predict(labeledExample.Example)
     if prediction.BestClassLabel == labeledExample.Label: correct += 1
     all += 1
- 
 # output the result
 print "Correctly classified: {0} of {1} ({2:0.2f}%)".format(correct, all, float(correct) / float(all) * 100.0)

@@ -11,7 +11,7 @@ namespace Latino.Tutorials
             // load datasets
             LabeledDataset<int, SparseVector<double>> trainSet = ModelUtils.LoadDataset(@"..\..\Datasets\Example1\train.dat");
             LabeledDataset<int, SparseVector<double>> testSet = ModelUtils.LoadDataset(@"..\..\Datasets\Example1\test.dat");
-            // train a centroid classifier            
+            // train a nearest centroid classifier            
             NearestCentroidClassifier<int> classifier = new NearestCentroidClassifier<int>();
             classifier.Similarity = CosineSimilarity.Instance;
             classifier.NormalizeCentroids = false;
