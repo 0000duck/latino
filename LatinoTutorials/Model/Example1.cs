@@ -9,8 +9,8 @@ namespace Latino.Model.Tutorials
         static void Main(string[] args)
         {
             // load datasets
-            LabeledDataset<int, SparseVector<double>> trainDataset = ModelUtils.LoadDataset(@"C:\Latino\Tutorials\Datasets\Example1\train.dat");
-            LabeledDataset<int, SparseVector<double>> testDataset = ModelUtils.LoadDataset(@"C:\Latino\Tutorials\Datasets\Example1\test.dat");
+            LabeledDataset<int, SparseVector<double>> trainDataset = ModelUtils.LoadDataset(@"..\..\Datasets\Example1\train.dat");
+            LabeledDataset<int, SparseVector<double>> testDataset = ModelUtils.LoadDataset(@"..\..\Datasets\Example1\test.dat");
             // train a centroid classifier            
             CentroidClassifier<int> classifier = new CentroidClassifier<int>();
             classifier.Similarity = CosineSimilarity.Instance;
