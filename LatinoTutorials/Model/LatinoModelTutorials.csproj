@@ -33,7 +33,8 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Example1.cs" />
+    <None Include="Example1.cs" />
+    <Compile Include="Example2.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\Latino\LatinoCore.csproj">

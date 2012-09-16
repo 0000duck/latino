@@ -2,24 +2,24 @@ using System;
 using Latino;
 using Latino.Model;
 
-namespace Latino.Model.Tutorials
+namespace Latino.Tutorials
 {
     class Program
     {
         static void Main(string[] args)
         {
             // load datasets
-            LabeledDataset<int, SparseVector<double>> trainDataset = ModelUtils.LoadDataset(@"..\..\Datasets\Example1\train.dat");
-            LabeledDataset<int, SparseVector<double>> testDataset = ModelUtils.LoadDataset(@"..\..\Datasets\Example1\test.dat");
+            LabeledDataset<int, SparseVector<double>> trainSet = ModelUtils.LoadDataset(@"..\..\Datasets\Example1\train.dat");
+            LabeledDataset<int, SparseVector<double>> testSet = ModelUtils.LoadDataset(@"..\..\Datasets\Example1\test.dat");
             // train a centroid classifier            
-            CentroidClassifier<int> classifier = new CentroidClassifier<int>();
+            NearestCentroidClassifier<int> classifier = new NearestCentroidClassifier<int>();
             classifier.Similarity = CosineSimilarity.Instance;
             classifier.NormalizeCentroids = false;
-            classifier.Train(trainDataset);
+            classifier.Train(trainSet);
             // test the classifier
             int correct = 0;
             int all = 0;
-            foreach (LabeledExample<int, SparseVector<double>> labeledExample in testDataset)
+            foreach (LabeledExample<int, SparseVector<double>> labeledExample in testSet)
             {
                 if (labeledExample.Example.Count != 0)
                 {
