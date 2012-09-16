@@ -14,10 +14,11 @@ namespace Latino.Tutorials
             logger1.Info("Main", "This message is brought to you by Logger 1.");
             logger2.Warn("Main", "This warning is brought to you by Logger 2.");
             // change the output format of Logger 2
-            logger2.CustomOutput = new Logger.CustomOutputDelegate(delegate(string loggerName, Logger.Level level, string funcName, Exception exception, string message, object[] msgArgs)
-            {
-                Console.WriteLine("{0} says: \"{1}\"", loggerName, string.Format(message, msgArgs));
-            });
+            logger2.CustomOutput = new Logger.CustomOutputDelegate(
+                delegate(string loggerName, Logger.Level level, string funcName, Exception exception, string message, object[] msgArgs)
+                {
+                    Console.WriteLine("{0} says: \"{1}\"", loggerName, string.Format(message, msgArgs));
+                });
             logger2.LocalOutputType = Logger.OutputType.Custom;
             // output the message and warning again
             logger1.Info("Main", "This message is brought to you by Logger 1.");
