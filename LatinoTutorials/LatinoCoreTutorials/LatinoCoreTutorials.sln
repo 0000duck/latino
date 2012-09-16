@@ -3,7 +3,7 @@ Microsoft Visual Studio Solution File, Format Version 9.00
 # Visual Studio 2005
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LatinoCoreTutorials", "LatinoCoreTutorials.csproj", "{B56127D0-FB70-41C2-AFA0-CCA827A283CC}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LatinoCore", "..\Latino\LatinoCore.csproj", "{5F184E57-EA63-46F4-9B3F-DB038CCE20A3}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LatinoCore", "..\..\Latino\LatinoCore.csproj", "{5F184E57-EA63-46F4-9B3F-DB038CCE20A3}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

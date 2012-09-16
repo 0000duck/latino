@@ -35,10 +35,12 @@
   <ItemGroup>
     <Compile Include="Example1.cs" />
     <None Include="Program.cs" />
+    <None Include="Example2.cs" />
+    <None Include="Example3.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\Latino\LatinoCore.csproj">
+    <ProjectReference Include="..\..\Latino\LatinoCore.csproj">
       <Project>{5F184E57-EA63-46F4-9B3F-DB038CCE20A3}</Project>
       <Name>LatinoCore</Name>
     </ProjectReference>
