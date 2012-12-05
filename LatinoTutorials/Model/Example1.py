@@ -3,8 +3,8 @@ from Latino import *
 from Latino.Model import *
  
 # load datasets
-trainSet = ModelUtils.LoadDataset("..\\..\\Datasets\\Example1\\train.dat")
-testSet = ModelUtils.LoadDataset("..\\..\\Datasets\\Example1\\test.dat")
+trainSet = ModelUtils.LoadDataset("..\\..\\Datasets\\train1.dat")
+testSet = ModelUtils.LoadDataset("..\\..\\Datasets\\test1.dat")
 
 # train a centroid classifier
 classifier = CentroidClassifier[int]()
